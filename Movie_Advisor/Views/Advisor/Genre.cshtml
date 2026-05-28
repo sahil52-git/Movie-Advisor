@@ -1,0 +1,584 @@
+﻿@using Movie_Advisor.ViewModels
+@model UserDashboardViewModel
+@{
+    ViewData["Title"] = "Genres";
+    Layout = "~/Views/Shared/_AfterLogin.cshtml";
+}
+
+<style>
+    :root {
+        --primary-color: #00D4FF;
+        --secondary-color: #00BCD4;
+        --card-bg: #ffffff;
+        --border-color: #e0e0e0;
+        --text-primary: #000000;
+        --text-secondary: #666666;
+        --dark-bg: #f5f5f5;
+        --success: #30D158;
+        --danger: #FF3B30;
+        --warning: #FF9500;
+        --purple: #8b5cf6;
+    }
+
+    body.dark-theme {
+        --card-bg: #1a1a1a;
+        --border-color: #2d2d2d;
+        --text-primary: #ffffff;
+        --text-secondary: #a0a0a0;
+        --dark-bg: #0d0d0d;
+    }
+
+    body.dark-theme {
+        background: var(--dark-bg) !important;
+    }
+
+    * {
+        color: var(--text-primary);
+    }
+
+    body {
+        background: var(--dark-bg);
+    }
+
+    .page-container {
+        min-height: calc(100vh - 120px);
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .main-content {
+        background: var(--card-bg);
+        border-radius: 14px;
+        border: 2px solid var(--border-color);
+        padding: 2.5rem;
+        box-shadow: 0 2px 12px rgba(0, 212, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+
+        .main-content:hover {
+            box-shadow: 0 8px 24px rgba(0, 212, 255, 0.15);
+        }
+
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2.5rem;
+        padding-bottom: 2rem;
+        border-bottom: 2px solid var(--border-color);
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+
+    .content-title-section {
+        flex: 1;
+    }
+
+    .content-title {
+        color: var(--text-primary);
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0 0 0.75rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+        .content-title i {
+            color: var(--primary-color);
+            font-size: 1.75rem;
+        }
+
+    .content-subtitle {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        margin: 0;
+        font-weight: 500;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-back {
+        background: var(--card-bg);
+        color: var(--text-primary);
+        border: 2px solid var(--border-color);
+        padding: 0.85rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+        .btn-back:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.2);
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .btn-back i {
+            font-size: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .btn-back:hover i {
+            transform: translateX(-4px);
+        }
+
+    .theme-toggle {
+        background: var(--card-bg);
+        color: var(--text-primary);
+        border: 2px solid var(--border-color);
+        padding: 0.85rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+        .theme-toggle:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.2);
+        }
+
+        .theme-toggle i {
+            font-size: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .theme-toggle:hover i {
+            transform: rotate(20deg);
+        }
+
+    .genre-search {
+        margin-bottom: 2rem;
+        position: relative;
+        max-width: 500px;
+    }
+
+        .genre-search input {
+            width: 100%;
+            padding: 0.85rem 1.25rem 0.85rem 3rem;
+            background: var(--dark-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+            .genre-search input:focus {
+                outline: none;
+                border-color: var(--primary-color);
+                box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+            }
+
+            .genre-search input::placeholder {
+                color: var(--text-secondary);
+            }
+
+        .genre-search i {
+            position: absolute;
+            left: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+    .genres-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .genre-card {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: var(--text-primary);
+        text-decoration: none;
+        padding: 1.25rem 1.5rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border-radius: 10px;
+        border: 2px solid var(--border-color);
+        background: var(--dark-bg);
+        cursor: pointer;
+    }
+
+        .genre-card:hover {
+            background: rgba(0, 212, 255, 0.05);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            text-decoration: none;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 212, 255, 0.2);
+        }
+
+        .genre-card.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: #000000;
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.25);
+        }
+
+        .genre-card i {
+            color: var(--primary-color);
+            font-size: 1.3rem;
+            width: 24px;
+            flex-shrink: 0;
+        }
+
+        .genre-card.active i {
+            color: #000000;
+        }
+
+    .genre-name {
+        flex: 1;
+    }
+
+    .genre-count {
+        background: rgba(0, 212, 255, 0.15);
+        color: var(--primary-color);
+        padding: 0.35rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .genre-card.active .genre-count {
+        background: rgba(0, 0, 0, 0.2);
+        color: #000000;
+    }
+
+    .no-results {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-secondary);
+        grid-column: 1 / -1;
+    }
+
+        .no-results i {
+            font-size: 4rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            opacity: 0.5;
+        }
+
+        .no-results h3 {
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+
+        .no-results p {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+    @@media (max-width: 1024px) {
+        .genres-grid {
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .page-container {
+            padding: 1rem;
+        }
+
+        .main-content {
+            padding: 1.5rem;
+        }
+
+        .genres-grid {
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .content-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .header-actions {
+            width: 100%;
+        }
+
+        .btn-back,
+        .theme-toggle {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .content-title {
+            font-size: 1.5rem;
+        }
+
+        .genre-search {
+            max-width: 100%;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .genres-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .genre-card {
+            padding: 1rem 1.25rem;
+        }
+
+        .header-actions {
+            flex-direction: column;
+        }
+
+        .btn-back,
+        .theme-toggle {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="page-container">
+    <div class="main-content">
+        <div class="content-header">
+            <div class="content-title-section">
+                <h1 class="content-title">
+                    <i class="fas fa-film"></i>
+                    Browse Genres
+                </h1>
+                <p class="content-subtitle">
+                    Explore movies by category • @(ViewBag.Genres?.Count ?? 0) genres available
+                </p>
+            </div>
+
+             <div class="header-actions">
+                @if (!string.IsNullOrEmpty(ViewBag.SelectedGenre) || !string.IsNullOrEmpty(Context.Request.Query["genre"]))
+                {
+                    <a href="@Url.Action("Genre", "Advisor")" class="btn-back">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back to Genres</span>
+                    </a>
+                }
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                    <span id="themeText">Dark Mode</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="genre-search">
+            <i class="fas fa-search"></i>
+            <input type="text" id="genreSearch" placeholder="Search genres...">
+        </div>
+
+        <div class="genres-grid" id="genreList">
+            @if (ViewBag.Genres != null && ViewBag.Genres.Count > 0)
+            {
+                @foreach (var genre in ViewBag.Genres)
+                {
+                    <a href="@Url.Action("FilterByGenre", "Advisor", new { genre = genre.Name })" class="genre-card">
+                        <i class="fas @GetGenreIcon(genre.Name)"></i>
+                        <span class="genre-name">@genre.Name</span>
+                        <span class="genre-count">@genre.MovieCount</span>
+                    </a>
+                }
+            }
+            else
+            {
+                <div class="no-results">
+                    <i class="fas fa-film"></i>
+                    <h3>No Genres Available</h3>
+                    <p>Check back soon!</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetGenreIcon(string genreName)
+    {
+        return genreName?.ToLower() switch
+        {
+            "action" => "fa-fist-raised",
+            "action & adventure" => "fa-running",
+            "adventure" => "fa-hiking",
+            "animation" => "fa-palette",
+            "biography" => "fa-book-open",
+            "comedy" => "fa-laugh",
+            "crime" => "fa-user-secret",
+            "documentary" => "fa-video",
+            "drama" => "fa-theater-masks",
+            "family" => "fa-users",
+            "fantasy" => "fa-dragon",
+            "horror" => "fa-ghost",
+            "music" => "fa-music",
+            "musical" => "fa-microphone",
+            "mystery" => "fa-question-circle",
+            "romance" => "fa-heart",
+            "sci-fi" => "fa-rocket",
+            "science fiction" => "fa-atom",
+            "sport" => "fa-basketball-ball",
+            "thriller" => "fa-bolt",
+            "war" => "fa-flag",
+            "western" => "fa-hat-cowboy",
+            _ => "fa-film"
+        };
+    }
+}
+
+@section Scripts {
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+
+            body.classList.toggle('dark-theme');
+
+            if (body.classList.contains('dark-theme')) {
+                themeIcon.className = 'fas fa-sun';
+                themeText.textContent = 'Light Mode';
+                localStorage.setItem('theme', 'dark');
+                showNotification('Dark mode enabled', 'fas fa-moon');
+            } else {
+                themeIcon.className = 'fas fa-moon';
+                themeText.textContent = 'Dark Mode';
+                localStorage.setItem('theme', 'light');
+                showNotification('Light mode enabled', 'fas fa-sun');
+            }
+        }
+
+        $(document).ready(function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                document.getElementById('themeIcon').className = 'fas fa-sun';
+                document.getElementById('themeText').textContent = 'Light Mode';
+            }
+
+            $('.genre-card').each(function(index) {
+                $(this).css({
+                    'animation': `fadeInUp 0.5s ease forwards ${index * 0.03}s`,
+                    'opacity': '0'
+                });
+            });
+        });
+
+        function showNotification(message, icon) {
+            const notification = $('<div>')
+                .css({
+                    'position': 'fixed',
+                    'top': '2rem',
+                    'right': '2rem',
+                    'background': 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))',
+                    'color': '#000000',
+                    'padding': '1rem 1.5rem',
+                    'border-radius': '12px',
+                    'font-weight': '600',
+                    'box-shadow': '0 8px 24px rgba(0, 212, 255, 0.3)',
+                    'z-index': '10000',
+                    'display': 'flex',
+                    'align-items': 'center',
+                    'gap': '0.75rem'
+                })
+                .html(`<i class="${icon}"></i> ${message}`)
+                .appendTo('body')
+                .hide()
+                .fadeIn(200);
+
+            setTimeout(() => {
+                notification.fadeOut(300, () => notification.remove());
+            }, 2000);
+        }
+
+        $('#genreSearch').on('input', function() {
+            const searchTerm = $(this).val().toLowerCase();
+            $('.genre-card').each(function() {
+                const genreText = $(this).find('.genre-name').text().toLowerCase();
+                $(this).toggle(genreText.includes(searchTerm));
+            });
+
+            const visibleCount = $('.genre-card:visible').length;
+            if (visibleCount === 0) {
+                if ($('#no-results-temp').length === 0) {
+                    $('.genres-grid').append(`
+                        <div id="no-results-temp" class="no-results">
+                            <i class="fas fa-search"></i>
+                            <h3>No Genres Found</h3>
+                            <p>Try a different search term</p>
+                        </div>
+                    `);
+                }
+            } else {
+                $('#no-results-temp').remove();
+            }
+        });
+
+        const currentUrl = window.location.href;
+        $('.genre-card').each(function() {
+            if (currentUrl.includes($(this).attr('href'))) {
+                $(this).addClass('active');
+            }
+        });
+
+        const style = document.createElement('style');
+        style.textContent = `
+            @@keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @@keyframes pulse {
+                0%, 100% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.05);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        $(document).keydown(function(e) {
+            if (e.key === 'd' || e.key === 'D') {
+                if (!$(e.target).is('input, textarea, select')) {
+                    toggleTheme();
+                }
+            }
+        });
+    </script>
+}

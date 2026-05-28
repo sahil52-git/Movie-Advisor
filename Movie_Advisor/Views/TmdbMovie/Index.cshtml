@@ -1,0 +1,169 @@
+﻿@model List<Movie_Advisor.Models.TmdbMovie>
+
+@{
+    ViewData["Title"] = ViewBag.Title ?? "Movies";
+    Layout = "~/Views/Shared/_AfterLogin.cshtml";
+    var searchQuery = ViewBag.SearchQuery as string ?? "";
+    var isSearchResult = ViewBag.IsSearchResult ?? false;
+    var currentPage = ViewBag.CurrentPage ?? 1;
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="display-4">
+                @if (isSearchResult && !string.IsNullOrEmpty(searchQuery))
+                {
+                    <text>Search Results for "@searchQuery"</text>
+                }
+                else
+                {
+                    <text>Popular Movies</text>
+                }
+            </h1>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-8 offset-md-2">
+            <form method="get" asp-controller="TmdbMovie" asp-action="Index" class="input-group">
+                <input type="text"
+                       name="searchQuery"
+                       class="form-control form-control-lg"
+                       placeholder="Search for movies..."
+                       value="@searchQuery"
+                       aria-label="Search movies">
+                <button class="btn btn-primary btn-lg" type="submit">
+                    <i class="bi bi-search"></i> Search
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="btn-group" role="group">
+                <a asp-controller="TmdbMovie" asp-action="Index" class="btn btn-outline-primary">Popular</a>
+                <a asp-controller="TmdbMovie" asp-action="NowPlaying" class="btn btn-outline-primary">Now Playing</a>
+                <a asp-controller="TmdbMovie" asp-action="TopRated" class="btn btn-outline-primary">Top Rated</a>
+            </div>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+            @foreach (var movie in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm movie-card">
+                        <a asp-controller="TmdbMovie" asp-action="Details" asp-route-id="@movie.Id" class="text-decoration-none">
+                            <img src="@movie.GetPosterUrl()"
+                                 class="card-img-top"
+                                 alt="@movie.Title"
+                                 style="height: 450px; object-fit: cover;">
+                        </a>
+                        <div class="card-body">
+                            <h5 class="card-title text-truncate" title="@movie.Title">
+                                <a asp-controller="TmdbMovie" asp-action="Details" asp-route-id="@movie.Id" class="text-dark text-decoration-none">
+                                    @movie.Title
+                                </a>
+                            </h5>
+                            <p class="card-text text-muted small">
+                                @if (!string.IsNullOrEmpty(movie.ReleaseDate))
+                                {
+                                    <i class="bi bi-calendar"></i> 
+                                    @DateTime.Parse(movie.ReleaseDate).ToString("MMM dd, yyyy")
+                                }
+                            </p>
+                            <p class="card-text" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                @(string.IsNullOrEmpty(movie.Overview) ? "No overview available." : movie.Overview)
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent border-top-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-star-fill"></i> @movie.VoteAverage.ToString("0.0")
+                                </span>
+                                <small class="text-muted">@movie.VoteCount votes</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-md-12">
+                <nav aria-label="Movie pagination">
+                    <ul class="pagination justify-content-center">
+                        @if (currentPage > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link"
+                                   asp-controller="TmdbMovie"
+                                   asp-action="Index"
+                                   asp-route-searchQuery="@searchQuery"
+                                   asp-route-page="@(currentPage - 1)">
+                                    Previous
+                                </a>
+                            </li>
+                        }
+
+                        <li class="page-item active">
+                            <span class="page-link">@currentPage</span>
+                        </li>
+
+                        <li class="page-item">
+                            <a class="page-link"
+                               asp-controller="TmdbMovie"
+                               asp-action="Index"
+                               asp-route-searchQuery="@searchQuery"
+                               asp-route-page="@(currentPage + 1)">
+                                Next
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-12 text-center py-5">
+                <i class="bi bi-film" style="font-size: 4rem; color: #ccc;"></i>
+                <h3 class="mt-3">No movies found</h3>
+                <p class="text-muted">
+                    @if (isSearchResult)
+                    {
+                        <text>Try searching with different keywords.</text>
+                    }
+                    else
+                    {
+                        <text>Unable to load movies at this time.</text>
+                    }
+                </p>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .movie-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2) !important;
+        }
+
+    .card-img-top {
+        transition: opacity 0.3s ease;
+    }
+
+    .movie-card:hover .card-img-top {
+        opacity: 0.9;
+    }
+</style>

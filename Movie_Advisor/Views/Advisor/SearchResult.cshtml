@@ -1,0 +1,131 @@
+﻿@using MovieAdvisor.Models
+@model Movie_Advisor.ViewModels.SearchResultViewModel
+@{
+    ViewData["Title"] = "Search Results";
+    Layout = "~/Views/Shared/_AfterLogin.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-search"></i> Search Results for:
+                <span class="text-primary">"@Model.SearchTerm"</span>
+            </h2>
+        </div>
+    </div>
+
+    @if (Model.Movies != null && Model.Movies.Any())
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    Found <strong>@Model.Movies.Count()</strong> movie(s) matching your search.
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            @foreach (Movie_Advisor.Models.Movie movie in Model.Movies)
+            {
+                <div class="col-md-4 col-lg-3 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        @if (!string.IsNullOrEmpty(movie.PosterUrl))
+                        {
+                            <img src="@movie.PosterUrl"
+                                 class="card-img-top"
+                                 alt="@movie.Title"
+                                 style="height: 350px; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center"
+                                 style="height: 350px;">
+                                <i class="fas fa-film fa-5x text-white opacity-50"></i>
+                            </div>
+                        }
+
+                        <div class="card-body">
+                            <h5 class="card-title">@movie.Title</h5>
+
+                            @if (movie.ReleaseYear.HasValue)
+                            {
+                                <p class="card-text text-muted">
+                                    <i class="fas fa-calendar"></i> @movie.ReleaseYear
+                                </p>
+                            }
+                            else if (movie.Year.HasValue)
+                            {
+                                <p class="card-text text-muted">
+                                    <i class="fas fa-calendar"></i> @movie.Year
+                                </p>
+                            }
+
+                            @if (!string.IsNullOrEmpty(movie.Genre))
+                            {
+                                <p class="card-text">
+                                    <span class="badge bg-primary">@movie.Genre</span>
+                                </p>
+                            }
+
+                            @if (movie.Rating.HasValue)
+                            {
+                                <p class="card-text">
+                                    <i class="fas fa-star text-warning"></i>
+                                    <strong>@movie.Rating.Value.ToString("F1")</strong>/10
+                                </p>
+                            }
+
+                            @if (!string.IsNullOrEmpty(movie.Description))
+                            {
+                                <p class="card-text small text-muted">
+                                    @(movie.Description.Length > 100 ? movie.Description.Substring(0, 100) + "..." : movie.Description)
+                                </p>
+                            }
+                        </div>
+
+                        <div class="card-footer bg-transparent">
+                            <a href="@Url.Action("Details", "Movie", new { id = movie.Id })"
+                               class="btn btn-primary btn-sm w-100">
+                                <i class="fas fa-info-circle"></i> View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="alert alert-warning text-center py-5">
+                    <i class="fas fa-search fa-3x mb-3"></i>
+                    <h4>No movies found matching "@Model.SearchTerm"</h4>
+                    <p class="mb-0">Try using different keywords or check your spelling.</p>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+    .card-title {
+        font-weight: bold;
+        font-size: 1.1rem;
+        min-height: 2.5rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>

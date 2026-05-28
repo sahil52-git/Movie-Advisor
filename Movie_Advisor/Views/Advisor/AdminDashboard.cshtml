@@ -1,0 +1,585 @@
+﻿@{
+    ViewData["Title"] = "Admin Dashboard";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    :root {
+        --primary-color: #00D4FF;
+        --secondary-color: #00BCD4;
+        --card-bg: #ffffff;
+        --border-color: #e0e0e0;
+        --text-primary: #000000;
+        --text-secondary: #666666;
+        --dark-bg: #f5f5f5;
+        --success: #30D158;
+        --danger: #FF3B30;
+        --warning: #FF9500;
+    }
+
+    * {
+        color: var(--text-primary);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .stat-card {
+        background: var(--card-bg);
+        padding: 2rem;
+        border-radius: 12px;
+        border: 2px solid var(--border-color);
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 212, 255, 0.1);
+    }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 212, 255, 0.2);
+            border-color: var(--primary-color);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+        }
+
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1.5rem;
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        flex-shrink: 0;
+    }
+
+        .stat-icon.movies {
+            background: rgba(0, 212, 255, 0.15);
+            color: var(--primary-color);
+        }
+
+        .stat-icon.users {
+            background: rgba(48, 209, 88, 0.15);
+            color: var(--success);
+        }
+
+        .stat-icon.ratings {
+            background: rgba(255, 149, 0, 0.15);
+            color: var(--warning);
+        }
+
+        .stat-icon.comments {
+            background: rgba(139, 92, 246, 0.15);
+            color: #8b5cf6;
+        }
+
+    .stat-title {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.75rem;
+        font-weight: 500;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.75rem;
+    }
+
+    .stat-change {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+        .stat-change.positive {
+            color: var(--success);
+        }
+
+        .stat-change.negative {
+            color: var(--danger);
+        }
+
+    .charts-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .chart-card {
+        background: var(--card-bg);
+        padding: 2rem;
+        border-radius: 12px;
+        border: 2px solid var(--border-color);
+        box-shadow: 0 2px 8px rgba(0, 212, 255, 0.1);
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        gap: 1rem;
+    }
+
+    .chart-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .chart-filter {
+        background: var(--dark-bg);
+        border: 2px solid var(--border-color);
+        color: var(--text-primary);
+        padding: 0.75rem 1.25rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+
+        .chart-filter:hover {
+            border-color: var(--primary-color);
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+    .chart-canvas-wrapper {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        min-height: 300px;
+    }
+
+    .recent-activities {
+        background: var(--card-bg);
+        padding: 2rem;
+        border-radius: 12px;
+        border: 2px solid var(--border-color);
+        box-shadow: 0 2px 8px rgba(0, 212, 255, 0.1);
+    }
+
+    .activity-item {
+        display: flex;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        transition: background 0.3s ease;
+    }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-item:hover {
+            background: rgba(0, 212, 255, 0.05);
+            border-radius: 8px;
+        }
+
+    .activity-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .activity-content {
+        flex: 1;
+    }
+
+    .activity-text {
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+
+    .activity-time {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+    }
+
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .action-btn {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        border: none;
+        padding: 1.25rem;
+        border-radius: 12px;
+        color: #000000;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 212, 255, 0.25);
+    }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
+        }
+
+        .action-btn i {
+            font-size: 1.25rem;
+        }
+
+    .view-all-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+
+        .view-all-link:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+
+    @@media (max-width: 968px) {
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stat-header {
+            flex-direction: column;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+        }
+
+        .quick-actions {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .chart-card {
+            min-height: 300px;
+        }
+
+        .action-btn {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .chart-title {
+            font-size: 1rem;
+        }
+    }
+</style>
+
+<div class="quick-actions">
+    <button class="action-btn" onclick="location.href='/Admin/NewMovie'">
+        <i class="fas fa-plus-circle"></i>
+        <span>Add New Movie</span>
+    </button>
+    <button class="action-btn" onclick="location.href='/Users'">
+        <i class="fas fa-user-plus"></i>
+        <span>Add New User</span>
+    </button>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <div>
+                <div class="stat-title">Total Movies</div>
+                <div class="stat-value">@(Model?.TotalMovies ?? 1247)</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>+12% this month</span>
+                </div>
+            </div>
+            <div class="stat-icon movies">
+                <i class="fas fa-film"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <div>
+                <div class="stat-title">Total Users</div>
+                <div class="stat-value">@(Model?.TotalUsers ?? 8542)</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>+8% this month</span>
+                </div>
+            </div>
+            <div class="stat-icon users">
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <div>
+                <div class="stat-title">Total Ratings</div>
+                <div class="stat-value">@(Model?.TotalRatings ?? 45234)</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>+15% this month</span>
+                </div>
+            </div>
+            <div class="stat-icon ratings">
+                <i class="fas fa-star"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <div>
+                <div class="stat-title">Pending Comments</div>
+                <div class="stat-value">@(Model?.PendingComments ?? 23)</div>
+                <div class="stat-change negative">
+                    <i class="fas fa-arrow-down"></i>
+                    <span>-5% this month</span>
+                </div>
+            </div>
+            <div class="stat-icon comments">
+                <i class="fas fa-comments"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="charts-grid">
+    <div class="chart-card">
+        <div class="chart-header">
+            <h3 class="chart-title">User Growth & Activity</h3>
+            <select class="chart-filter">
+                <option>Last 7 Days</option>
+                <option>Last 30 Days</option>
+                <option>Last 3 Months</option>
+                <option>Last Year</option>
+            </select>
+        </div>
+        <div class="chart-canvas-wrapper">
+            <canvas id="userGrowthChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <div class="chart-header">
+            <h3 class="chart-title">Content Distribution</h3>
+        </div>
+        <div class="chart-canvas-wrapper">
+            <canvas id="contentDistributionChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="recent-activities">
+    <div class="chart-header">
+        <h3 class="chart-title">Recent Activities</h3>
+        <a href="/Admin/ActivityLog" class="view-all-link">View All</a>
+    </div>
+    <div>
+        <div class="activity-item">
+            <div class="activity-icon" style="background: rgba(48, 209, 88, 0.15); color: var(--success);">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <div class="activity-content">
+                <div class="activity-text"><strong>New user registered:</strong> john.doe@email.com</div>
+                <div class="activity-time">2 minutes ago</div>
+            </div>
+        </div>
+        <div class="activity-item">
+            <div class="activity-icon" style="background: rgba(0, 212, 255, 0.15); color: var(--primary-color);">
+                <i class="fas fa-film"></i>
+            </div>
+            <div class="activity-content">
+                <div class="activity-text"><strong>Movie added:</strong> "The Dark Knight Returns"</div>
+                <div class="activity-time">15 minutes ago</div>
+            </div>
+        </div>
+        <div class="activity-item">
+            <div class="activity-icon" style="background: rgba(255, 59, 48, 0.15); color: var(--danger);">
+                <i class="fas fa-flag"></i>
+            </div>
+            <div class="activity-content">
+                <div class="activity-text"><strong>Content reported:</strong> Inappropriate comment flagged</div>
+                <div class="activity-time">1 hour ago</div>
+            </div>
+        </div>
+        <div class="activity-item">
+            <div class="activity-icon" style="background: rgba(255, 149, 0, 0.15); color: var(--warning);">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="activity-content">
+                <div class="activity-text"><strong>New rating:</strong> User rated "Inception" 5 stars</div>
+                <div class="activity-time">2 hours ago</div>
+            </div>
+        </div>
+        <div class="activity-item">
+            <div class="activity-icon" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6;">
+                <i class="fas fa-comment"></i>
+            </div>
+            <div class="activity-content">
+                <div class="activity-text"><strong>Comment posted:</strong> "Amazing cinematography!"</div>
+                <div class="activity-time">3 hours ago</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script>
+    const userGrowthCtx = document.getElementById('userGrowthChart').getContext('2d');
+    new Chart(userGrowthCtx, {
+        type: 'line',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+                label: 'New Users',
+                data: [65, 78, 90, 81, 95, 105, 120],
+                borderColor: '#00d9ff',
+                backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointRadius: 5,
+                pointBackgroundColor: '#00d9ff',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2
+            }, {
+                label: 'Active Users',
+                data: [550, 580, 600, 620, 650, 680, 700],
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointRadius: 5,
+                pointBackgroundColor: '#10b981',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#666666',
+                        font: {
+                            size: 12,
+                            weight: 'bold'
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: '#666666',
+                        font: {
+                            size: 11
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 212, 255, 0.1)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: '#666666',
+                        font: {
+                            size: 11
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 212, 255, 0.1)'
+                    }
+                }
+            }
+        }
+    });
+
+    const contentDistCtx = document.getElementById('contentDistributionChart').getContext('2d');
+    new Chart(contentDistCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Movies', 'Comments', 'Ratings', 'Reports'],
+            datasets: [{
+                data: [1247, 3542, 45234, 89],
+                backgroundColor: [
+                    'rgba(0, 212, 255, 0.8)',
+                    'rgba(139, 92, 246, 0.8)',
+                    'rgba(245, 158, 11, 0.8)',
+                    'rgba(239, 68, 68, 0.8)'
+                ],
+                borderColor: '#ffffff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#666666',
+                        padding: 15,
+                        font: {
+                            size: 11,
+                            weight: 'bold'
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>

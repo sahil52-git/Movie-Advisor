@@ -1,0 +1,446 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Movie Advisor Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+          darkMode: 'class',
+          theme: {
+            extend: {
+              colors: {
+                primary: '#00BCD4',
+                danger: '#dc3545',
+                warning: '#FF9500',
+                success: '#30D158',
+              }
+            }
+          }
+        }
+    </script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Jost', sans-serif;
+            background: linear-gradient(135deg, #0f2862 0%, #091f36 100%);
+            color: white;
+            min-height: 100vh;
+            position: relative;
+        }
+
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(circle at 20% 50%, rgba(15, 40, 98, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(9, 31, 54, 0.1) 0%, transparent 50%), radial-gradient(circle at 40% 80%, rgba(15, 40, 98, 0.05) 0%, transparent 50%);
+                z-index: -1;
+                pointer-events: none;
+            }
+
+        aside {
+            background: linear-gradient(135deg, rgba(42, 42, 42, 0.95) 0%, rgba(9, 31, 54, 0.9) 100%) !important;
+            box-shadow: 0 4px 20px rgba(9, 31, 54, 0.6);
+            border-right: 1px solid rgba(0, 188, 212, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+            aside a, aside button, aside span, aside p {
+                color: #ffffff !important;
+            }
+
+            aside h1 {
+                color: #00BCD4 !important;
+            }
+
+            aside a:hover, aside button:hover {
+                background-color: rgba(0, 188, 212, 0.1) !important;
+            }
+
+            aside .text-primary {
+                color: #00BCD4 !important;
+            }
+
+        header {
+            background: linear-gradient(135deg, #091f36 0%, #0f2862 100%) !important;
+            border-bottom: 1px solid rgba(0, 188, 212, 0.3) !important;
+            box-shadow: 0 4px 20px rgba(9, 31, 54, 0.6);
+            backdrop-filter: blur(10px);
+        }
+
+            header h2, header button, header i {
+                color: #ffffff !important;
+            }
+
+                header button:hover {
+                    color: #00BCD4 !important;
+                }
+
+        section {
+            background: transparent !important;
+        }
+
+        .border-gray-200 {
+            border-color: rgba(0, 188, 212, 0.3) !important;
+        }
+
+        i {
+            color: #ffffff;
+        }
+
+        p, span, h1, h2, h3, h4, h5, h6, label {
+            color: #ffffff !important;
+        }
+
+        .text-cyan-400, .text-primary {
+            color: #00BCD4 !important;
+        }
+
+        .border-b {
+            border-color: rgba(0, 188, 212, 0.3) !important;
+        }
+
+        .logout-button {
+            color: #dc3545 !important;
+        }
+
+            .logout-button:hover {
+                background-color: rgba(220, 53, 69, 0.1) !important;
+            }
+
+        .notification-badge {
+            background: #dc3545;
+            color: white !important;
+        }
+
+        .user-profile-container {
+            position: relative;
+        }
+
+        .user-profile-button {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(42, 42, 42, 0.6) 0%, rgba(9, 31, 54, 0.6) 100%);
+            border: 2px solid rgba(0, 188, 212, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+            .user-profile-button:hover {
+                border-color: #00BCD4;
+                background: linear-gradient(135deg, rgba(42, 42, 42, 0.8) 0%, rgba(9, 31, 54, 0.8) 100%);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);
+            }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00BCD4, #26C6DA);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: #ffffff;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #ffffff !important;
+            line-height: 1.2;
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            color: #00BCD4 !important;
+            font-weight: 500;
+        }
+
+        .dropdown-icon {
+            font-size: 0.875rem;
+            transition: transform 0.3s ease;
+            color: #00BCD4 !important;
+        }
+
+        .user-profile-button.active .dropdown-icon {
+            transform: rotate(180deg);
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: calc(100% + 0.75rem);
+            right: 0;
+            min-width: 240px;
+            background: linear-gradient(135deg, rgba(42, 42, 42, 0.98) 0%, rgba(9, 31, 54, 0.98) 100%);
+            border: 2px solid rgba(0, 188, 212, 0.3);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+            .user-dropdown.show {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0);
+            }
+
+        .dropdown-header {
+            padding: 1.25rem;
+            border-bottom: 1px solid rgba(0, 188, 212, 0.2);
+            background: rgba(0, 188, 212, 0.05);
+        }
+
+            .dropdown-header .user-name {
+                font-size: 1rem;
+                margin-bottom: 0.25rem;
+            }
+
+            .dropdown-header .user-email {
+                font-size: 0.8rem;
+                color: #b0b0b0 !important;
+            }
+
+        .dropdown-menu {
+            padding: 0.5rem;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            border-radius: 8px;
+            color: #ffffff !important;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+        }
+
+            .dropdown-item:hover {
+                background: rgba(0, 188, 212, 0.1);
+                color: #00BCD4 !important;
+            }
+
+            .dropdown-item i {
+                width: 20px;
+                text-align: center;
+                font-size: 1rem;
+            }
+
+        .dropdown-divider {
+            height: 1px;
+            background: rgba(0, 188, 212, 0.2);
+            margin: 0.5rem 0;
+        }
+
+        .dropdown-item.logout {
+            color: #dc3545 !important;
+        }
+
+            .dropdown-item.logout:hover {
+                background: rgba(220, 53, 69, 0.1);
+            }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #091f36;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #0f2862, #00bcd4);
+            border-radius: 4px;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: linear-gradient(135deg, #00bcd4, #0f2862);
+            }
+
+        ::selection {
+            background: rgba(0, 188, 212, 0.3);
+            color: white;
+        }
+
+        ::-moz-selection {
+            background: rgba(0, 188, 212, 0.3);
+            color: white;
+        }
+
+        @@media (max-width: 768px) {
+            .user-info
+
+        {
+            display: none;
+        }
+
+        .user-dropdown {
+            right: -1rem;
+        }
+
+        }
+    </style>
+</head>
+<body class="min-h-screen flex font-sans">
+
+    <aside class="w-72 flex flex-col border-r">
+        <div class="p-8 border-b">
+            <h1 class="text-2xl font-bold flex items-center gap-3">
+                <span class="text-3xl">Movie Advisor</span>
+            </h1>
+            <p class="text-sm text-primary mt-2 flex items-center gap-2">
+                <i class="fas fa-shield-alt"></i> Administrator Panel
+            </p>
+        </div>
+
+        <nav class="flex-1 p-4">
+            <ul class="space-y-1">
+                <li>
+                    <a href="@Url.Action("Dashboard", "Admin")" class="flex items-center gap-4 py-3 px-4 rounded-lg hover:bg-blue-100 transition">
+                        <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("Index", "Movie")" class="flex items-center gap-4 py-3 px-4 rounded-lg hover:bg-blue-100 transition">
+                        <i class="fas fa-film"></i><span>Movies Management</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("Index", "Users")" class="flex items-center gap-4 py-3 px-4 rounded-lg hover:bg-blue-100 transition">
+                        <i class="fas fa-users"></i><span>Users</span>
+                    </a>
+                </li>
+                 <li>
+                    <a href="@Url.Action("Comments", "Admin")" class="flex items-center gap-4 py-3 px-4 rounded-lg hover:bg-blue-100 transition">
+                        <i class="fas fa-users"></i><span>Comments</span>
+                    </a>
+                </li>
+                <li>
+                    <form asp-controller="User" asp-action="Logout" method="post" style="display: inline; width: 100%;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="logout-button flex items-center gap-4 py-3 px-4 rounded-lg hover:bg-blue-100 transition w-full text-left border-0 bg-transparent" style="cursor: pointer;">
+                            <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto">
+        <header class="px-10 py-6 flex justify-between items-center sticky top-0 z-10">
+            <h2 class="text-3xl font-bold">@ViewData["Title"]</h2>
+            <div class="flex items-center gap-6">
+                <div class="user-profile-container">
+                    <button class="user-profile-button" id="userProfileBtn" onclick="toggleUserDropdown()">
+                        <div class="user-avatar">
+                            <span>@(User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "A")</span>
+                        </div>
+                        <div class="user-info">
+                            <span class="user-name">@(User.Identity?.Name ?? "Admin User")</span>
+                            <span class="user-role">Administrator</span>
+                        </div>
+                        <i class="fas fa-chevron-down dropdown-icon"></i>
+                    </button>
+
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="dropdown-header">
+                            <div class="user-name">@(User.Identity?.Name ?? "Admin User")</div>
+                            <div class="user-email">@(User.Identity?.Name ?? "admin")sahilshrestha741@gmail.com</div>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a href="@Url.Action("Profile", "Admin")" class="dropdown-item">
+                                <i class="fas fa-user"></i>
+                                <span>My Profile</span>
+                            </a>
+                            <a href="@Url.Action("AccountSettings", "Admin")" class="dropdown-item">
+                                <i class="fas fa-cog"></i>
+                                <span>Account Settings</span>
+                            </a>
+                            <a href="@Url.Action("ActivityLog", "Admin")" class="dropdown-item">
+                                <i class="fas fa-history"></i>
+                                <span>Activity Log</span>
+                            </a>
+                            <a href="@Url.Action("Notifications", "Admin")" class="dropdown-item">
+                                <i class="fas fa-bell"></i>
+                                <span>Notifications</span>
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <form asp-controller="User" asp-action="Logout" method="post" style="margin: 0;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="dropdown-item logout">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    <span>Logout</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section class="p-10">
+            @RenderBody()
+        </section>
+    </main>
+
+    <script>
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            const button = document.getElementById('userProfileBtn');
+
+            dropdown.classList.toggle('show');
+            button.classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(event) {
+            const container = document.querySelector('.user-profile-container');
+            if (!container.contains(event.target)) {
+                document.getElementById('userDropdown').classList.remove('show');
+                document.getElementById('userProfileBtn').classList.remove('active');
+            }
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                document.getElementById('userDropdown').classList.remove('show');
+                document.getElementById('userProfileBtn').classList.remove('active');
+            }
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

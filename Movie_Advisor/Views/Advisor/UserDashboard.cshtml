@@ -1,0 +1,379 @@
+﻿@using Movie_Advisor.ViewModels
+@model UserDashboardViewModel
+@{
+    ViewData["Title"] = "User_Dashboard";
+    Layout = "~/Views/Shared/_AfterLogin.cshtml";
+}
+
+<style>
+    .category-container {
+        min-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .category-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .category-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 10px;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .category-subtitle {
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 400;
+    }
+
+    .close-btn {
+        position: fixed;
+        top: 100px;
+        right: 30px;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+    .categories-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+        margin-bottom: 30px;
+        max-width: 600px;
+    }
+
+    .category-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 50px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: 'Inter', sans-serif;
+        backdrop-filter: blur(10px);
+    }
+
+        .category-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .category-btn.selected {
+            background: linear-gradient(135deg, #00BCD4, #26C6DA);
+            border-color: #00BCD4;
+            box-shadow: 0 4px 15px rgba(0, 188, 212, 0.4);
+        }
+
+    .category-icon {
+        font-size: 1.3rem;
+    }
+
+    .continue-btn-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .continue-btn {
+        background: linear-gradient(135deg, #dc3545, #b02a37);
+        color: white;
+        border: none;
+        padding: 15px 60px;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: 'Inter', sans-serif;
+        box-shadow: 0 4px 20px rgba(220, 53, 69, 0.3);
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+        .continue-btn.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+            .continue-btn.active:hover {
+                background: linear-gradient(135deg, #c82333, #a02622);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 25px rgba(220, 53, 69, 0.5);
+            }
+
+        .continue-btn.loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+    .selection-counter {
+        font-size: 0.95rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .loading-spinner {
+        display: none;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin-left: 10px;
+    }
+
+    @@keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @@media (max-width: 991px) {
+        .category-title {
+            font-size: 2rem;
+        }
+
+        .close-btn {
+            top: 90px;
+            right: 20px;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .category-title {
+            font-size: 1.6rem;
+        }
+
+        .category-subtitle {
+            font-size: 1rem;
+        }
+
+        .categories-grid {
+            gap: 8px;
+        }
+
+        .category-btn {
+            padding: 10px 18px;
+            font-size: 0.9rem;
+        }
+
+        .continue-btn {
+            padding: 12px 40px;
+            font-size: 1rem;
+        }
+
+        .close-btn {
+            width: 35px;
+            height: 35px;
+            font-size: 1.3rem;
+        }
+    }
+</style>
+
+<button class="close-btn" onclick="skipSelection()">✕</button>
+
+<div class="category-container">
+    <div class="category-header">
+        <h1 class="category-title">What's your mood today?</h1>
+        <p class="category-subtitle">Select your favorite genres (up to 3)</p>
+    </div>
+
+    <div class="categories-grid">
+        <button class="category-btn" data-genre="Action" onclick="toggleCategory(this)">
+            <span class="category-icon">🎬</span>
+            <span>Action</span>
+        </button>
+        <button class="category-btn" data-genre="Comedy" onclick="toggleCategory(this)">
+            <span class="category-icon">😂</span>
+            <span>Comedy</span>
+        </button>
+        <button class="category-btn" data-genre="Drama" onclick="toggleCategory(this)">
+            <span class="category-icon">🎭</span>
+            <span>Drama</span>
+        </button>
+        <button class="category-btn" data-genre="Horror" onclick="toggleCategory(this)">
+            <span class="category-icon">😱</span>
+            <span>Horror</span>
+        </button>
+        <button class="category-btn" data-genre="Romance" onclick="toggleCategory(this)">
+            <span class="category-icon">❤️</span>
+            <span>Romance</span>
+        </button>
+        <button class="category-btn" data-genre="Sci-Fi" onclick="toggleCategory(this)">
+            <span class="category-icon">🚀</span>
+            <span>Sci-Fi</span>
+        </button>
+        <button class="category-btn" data-genre="Thriller" onclick="toggleCategory(this)">
+            <span class="category-icon">🔪</span>
+            <span>Thriller</span>
+        </button>
+        <button class="category-btn" data-genre="Adventure" onclick="toggleCategory(this)">
+            <span class="category-icon">🗺️</span>
+            <span>Adventure</span>
+        </button>
+        <button class="category-btn" data-genre="Fantasy" onclick="toggleCategory(this)">
+            <span class="category-icon">🧙</span>
+            <span>Fantasy</span>
+        </button>
+        <button class="category-btn" data-genre="Animation" onclick="toggleCategory(this)">
+            <span class="category-icon">🎨</span>
+            <span>Animation</span>
+        </button>
+        <button class="category-btn" data-genre="Crime" onclick="toggleCategory(this)">
+            <span class="category-icon">🕵️</span>
+            <span>Crime</span>
+        </button>
+        <button class="category-btn" data-genre="Documentary" onclick="toggleCategory(this)">
+            <span class="category-icon">📽️</span>
+            <span>Documentary</span>
+        </button>
+    </div>
+
+    <div class="continue-btn-container">
+        <button class="continue-btn" id="continueBtn" onclick="continueToHome()">
+            <span id="btnText">Continue</span>
+            <span class="loading-spinner" id="loadingSpinner"></span>
+        </button>
+        <div class="selection-counter" id="counter">Select at least 1 genre (0/3)</div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let selectedCategories = [];
+        const maxSelections = 3;
+
+        function toggleCategory(button) {
+            const genre = button.getAttribute('data-genre');
+
+            if (button.classList.contains('selected')) {
+                button.classList.remove('selected');
+                selectedCategories = selectedCategories.filter(g => g !== genre);
+            } else {
+                if (selectedCategories.length < maxSelections) {
+                    button.classList.add('selected');
+                    selectedCategories.push(genre);
+                } else {
+                    showNotification(`You can only select up to ${maxSelections} genres. Please deselect one to choose another.`, 'warning');
+                    return;
+                }
+            }
+
+            updateContinueButton();
+        }
+
+        function updateContinueButton() {
+            const continueBtn = document.getElementById('continueBtn');
+            const counter = document.getElementById('counter');
+
+            if (selectedCategories.length > 0) {
+                counter.textContent = `Selected: ${selectedCategories.length}/3`;
+                continueBtn.classList.add('active');
+            } else {
+                counter.textContent = 'Select at least 1 genre (0/3)';
+                continueBtn.classList.remove('active');
+            }
+        }
+
+        async function continueToHome() {
+            if (selectedCategories.length > 0) {
+                const continueBtn = document.getElementById('continueBtn');
+                const btnText = document.getElementById('btnText');
+                const spinner = document.getElementById('loadingSpinner');
+
+                continueBtn.classList.add('loading');
+                btnText.textContent = 'Saving...';
+                spinner.style.display = 'inline-block';
+
+                try {
+
+                    const response = await fetch('@Url.Action("SavePreferences", "Advisor")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                        },
+                        body: JSON.stringify(selectedCategories)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        console.log('Preferences saved:', selectedCategories);
+
+                        window.location.href = '@Url.Action("Home", "Advisor")';
+                    } else {
+                        showNotification('Failed to save preferences. Redirecting anyway...', 'error');
+                        setTimeout(() => {
+                            window.location.href = '@Url.Action("Home", "Advisor")';
+                        }, 1500);
+                    }
+                } catch (error) {
+                    console.error('Error saving preferences:', error);
+                    showNotification('Error saving preferences. Redirecting...', 'error');
+                    setTimeout(() => {
+                        window.location.href = '@Url.Action("Home", "Advisor")';
+                    }, 1500);
+                }
+            }
+        }
+
+        function skipSelection() {
+            if (confirm('Are you sure you want to skip genre selection? You can always filter movies later.')) {
+                window.location.href = '@Url.Action("Home", "Advisor")';
+            }
+        }
+
+        function showNotification(message, type) {
+
+            alert(message);
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                skipSelection();
+            } else if (e.key === 'Enter' && selectedCategories.length > 0) {
+                continueToHome();
+            }
+        });
+
+        if (window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.href);
+        }
+    </script>
+}

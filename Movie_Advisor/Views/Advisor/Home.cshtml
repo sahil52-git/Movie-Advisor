@@ -1,0 +1,516 @@
+﻿@using Movie_Advisor.ViewModels
+@model UserDashboardViewModel
+@{
+    ViewData["Title"] = "Home - Movies";
+    Layout = "~/Views/Shared/_AfterLogin.cshtml";
+}
+
+<style>
+    .movies-container {
+        padding: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .filter-bar {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .genre-filter-bar {
+        background: linear-gradient(135deg, rgba(0, 188, 212, 0.2), rgba(38, 198, 218, 0.2));
+        border: 2px solid rgba(0, 188, 212, 0.5);
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .genre-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        color: white;
+    }
+
+        .genre-info h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+
+    .genre-badge {
+        background: linear-gradient(135deg, #00BCD4, #26C6DA);
+        color: white;
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .back-to-genres-btn {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        padding: 12px 25px;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+    }
+
+        .back-to-genres-btn:hover {
+            background: linear-gradient(135deg, #00BCD4, #26C6DA);
+            border-color: #00BCD4;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 188, 212, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+        .back-to-genres-btn i {
+            transition: transform 0.3s ease;
+        }
+
+        .back-to-genres-btn:hover i {
+            transform: translateX(-5px);
+        }
+
+    .preference-info {
+        background: linear-gradient(135deg, #00BCD4, #26C6DA);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 50px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 500;
+    }
+
+    .filter-btn {
+        background: rgba(220, 53, 69, 0.9);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        font-weight: 500;
+    }
+
+        .filter-btn:hover {
+            background: rgba(220, 53, 69, 1);
+            transform: translateY(-2px);
+            color: white;
+            text-decoration: none;
+        }
+
+    .clear-preferences-btn {
+        background: linear-gradient(135deg, #00BCD4, #26C6DA);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        font-weight: 600;
+    }
+
+        .clear-preferences-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 188, 212, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+    .movies-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 25px;
+        margin-bottom: 30px;
+    }
+
+    .movie-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+    }
+
+        .movie-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0, 188, 212, 0.3);
+        }
+
+    .movie-poster {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 4rem;
+    }
+
+        .movie-poster img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .movie-info {
+        padding: 15px;
+    }
+
+    .movie-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 8px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        min-height: 2.4em;
+    }
+
+    .movie-genres {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-bottom: 8px;
+        min-height: 28px;
+    }
+
+    .genre-tag {
+        background: rgba(0, 188, 212, 0.3);
+        color: #00BCD4;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .movie-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .movie-rating {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: #FFD700;
+        font-weight: 600;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        padding: 30px 0;
+        flex-wrap: wrap;
+    }
+
+    .page-btn {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 40px;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+        .page-btn:hover:not(.active):not(.disabled) {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .page-btn.active {
+            background: linear-gradient(135deg, #00BCD4, #26C6DA);
+            font-weight: 600;
+        }
+
+        .page-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+    .no-movies {
+        text-align: center;
+        padding: 60px 20px;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+        .no-movies h2 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: white;
+        }
+
+    .alert {
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+
+    .alert-info {
+        background: rgba(0, 188, 212, 0.2);
+        border: 1px solid #00BCD4;
+        color: white;
+    }
+
+    .alert-success {
+        background: rgba(76, 175, 80, 0.2);
+        border: 1px solid #4CAF50;
+        color: white;
+    }
+
+    .alert-danger {
+        background: rgba(244, 67, 54, 0.2);
+        border: 1px solid #f44336;
+        color: white;
+    }
+
+    @@media (max-width: 768px) {
+        .movies-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .movie-poster {
+            height: 225px;
+        }
+
+        .filter-bar, .genre-filter-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .genre-info {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .back-to-genres-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="movies-container">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            ✅ @TempData["Success"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            ❌ @TempData["Error"]
+        </div>
+    }
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-info">
+            @TempData["Message"]
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(ViewBag.SelectedGenre))
+    {
+        <div class="genre-filter-bar">
+            <div class="genre-info">
+                <h2>🎬 @ViewBag.SelectedGenre Movies</h2>
+                <span class="genre-badge">@ViewBag.TotalMovies movies found</span>
+            </div>
+            <a href="@Url.Action("Genre", "Advisor")" class="back-to-genres-btn">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Genres</span>
+            </a>
+        </div>
+    }
+
+    @if (ViewBag.FilteredByPreferences == true)
+    {
+        <div class="filter-bar">
+            <div class="preference-info">
+                <span>🎬</span>
+                <span>Showing movies for: <strong>@string.Join(", ", ViewBag.UserPreferences)</strong></span>
+            </div>
+
+            <a href="@Url.Action("UserDashboard", "Advisor")" class="filter-btn">
+                Change Preferences
+            </a>
+        </div>
+    }
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+        <h1 style="color: white; font-size: 2rem; font-weight: 700;">
+            @if (!string.IsNullOrEmpty(ViewBag.SelectedGenre))
+            {
+                <span>@ViewBag.SelectedGenre Movies</span>
+            }
+            else if (ViewBag.FilteredByPreferences == true)
+            {
+                <span>Your Personalized Movies</span>
+            }
+            else
+            {
+                <span>All Movies</span>
+            }
+        </h1>
+        <div style="color: rgba(255, 255, 255, 0.7);">
+            Showing @Model.Movie.Count of @ViewBag.TotalMovies movies
+        </div>
+    </div>
+
+    @if (Model.Movie != null && Model.Movie.Any())
+    {
+        <div class="movies-grid">
+            @foreach (var movie in Model.Movie)
+            {
+                <div class="movie-card" onclick="window.location.href='@Url.Action("MovieDetail", "Advisor", new { id = movie.Id })'">
+                    <div class="movie-poster">
+                        @if (!string.IsNullOrEmpty(movie.PosterUrl))
+                        {
+                            <img src="@movie.PosterUrl"
+                                 alt="@movie.Title"
+                                 onerror="this.parentElement.innerHTML='🎬'" />
+                        }
+                        else
+                        {
+                            <span>🎬</span>
+                        }
+                    </div>
+
+                    <div class="movie-info">
+                        <h3 class="movie-title">@movie.Title</h3>
+
+                        @if (!string.IsNullOrEmpty(movie.Genre))
+                        {
+                            <div class="movie-genres">
+                                @{
+                                    var genres = movie.Genre.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                    .Select(g => g.Trim())
+                                    .Take(3);
+                                }
+                                @foreach (var genre in genres)
+                                {
+                                    <span class="genre-tag">@genre</span>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="movie-genres"></div>
+                        }
+
+                        <div class="movie-meta">
+                            <span>@(movie.ReleaseDate?.Year ?? 0)</span>
+                            @if (movie.Rating.HasValue)
+                            {
+                                <div class="movie-rating">
+                                    <span>⭐</span>
+                                    <span>@movie.Rating.Value.ToString("0.0")</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (ViewBag.TotalPages > 1)
+        {
+            var routeValues = new Dictionary<string, object> { { "page", 1 } };
+            if (!string.IsNullOrEmpty(ViewBag.SelectedGenre))
+            {
+                routeValues.Add("genre", ViewBag.SelectedGenre);
+            }
+
+            <div class="pagination">
+                <a href="@Url.Action(!string.IsNullOrEmpty(ViewBag.SelectedGenre) ? "FilterByGenre" : "Home", routeValues)"
+                   class="page-btn @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                    ⏮ First
+                </a>
+
+                @{
+                    routeValues["page"] = ViewBag.CurrentPage - 1;
+                }
+                <a href="@Url.Action(!string.IsNullOrEmpty(ViewBag.SelectedGenre) ? "FilterByGenre" : "Home", routeValues)"
+                   class="page-btn @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                    ◀ Prev
+                </a>
+
+                @for (int i = Math.Max(1, ViewBag.CurrentPage - 2); i <= Math.Min(ViewBag.TotalPages, ViewBag.CurrentPage + 2); i++)
+                {
+                    routeValues["page"] = i;
+                    <a href="@Url.Action(!string.IsNullOrEmpty(ViewBag.SelectedGenre) ? "FilterByGenre" : "Home", routeValues)"
+                       class="page-btn @(i == ViewBag.CurrentPage ? "active" : "")">
+                        @i
+                    </a>
+                }
+
+                @{
+                    routeValues["page"] = ViewBag.CurrentPage + 1;
+                }
+                <a href="@Url.Action(!string.IsNullOrEmpty(ViewBag.SelectedGenre) ? "FilterByGenre" : "Home", routeValues)"
+                   class="page-btn @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                    Next ▶
+                </a>
+
+                @{
+                    routeValues["page"] = ViewBag.TotalPages;
+                }
+                <a href="@Url.Action(!string.IsNullOrEmpty(ViewBag.SelectedGenre) ? "FilterByGenre" : "Home", routeValues)"
+                   class="page-btn @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                    Last ⏭
+                </a>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="no-movies">
+            <h2>😔 No Movies Found</h2>
+        </div>
+    }
+</div>

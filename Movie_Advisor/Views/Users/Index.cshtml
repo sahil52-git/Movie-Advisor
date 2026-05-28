@@ -1,0 +1,1468 @@
+﻿@model List<Movie_Advisor.Models.User>
+@{
+    ViewData["Title"] = "Users Management";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    :root {
+        --primary-color: #00BCD4;
+        --secondary-color: #26C6DA;
+        --card-bg: rgba(42, 42, 42, 0.95);
+        --card-bg-light: rgba(9, 31, 54, 0.9);
+        --border-color: rgba(0, 188, 212, 0.3);
+        --text-primary: #ffffff;
+        --text-secondary: #b0b0b0;
+        --dark-bg: rgba(15, 40, 98, 0.5);
+        --success: #30D158;
+        --danger: #dc3545;
+        --warning: #FF9500;
+        --hover-bg: rgba(0, 188, 212, 0.1);
+    }
+
+    * {
+        color: var(--text-primary);
+    }
+
+    .user-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .stat-mini {
+        background: linear-gradient(135deg, var(--card-bg) 0%, var(--card-bg-light) 100%);
+        padding: 1.75rem;
+        border-radius: 14px;
+        border: 2px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        box-shadow: 0 4px 20px rgba(9, 31, 54, 0.6);
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+        .stat-mini:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 32px rgba(0, 188, 212, 0.4);
+            border-color: var(--primary-color);
+        }
+
+    .stat-mini-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .stat-mini-content h3 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem 0;
+        color: var(--text-primary);
+    }
+
+    .stat-mini-content p {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin: 0;
+        font-weight: 500;
+    }
+
+    .user-avatar-large {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.125rem;
+        color: white;
+        border: 2px solid var(--border-color);
+    }
+
+    .role-select {
+        background: var(--dark-bg);
+        border: 2px solid var(--border-color);
+        color: var(--text-primary);
+        padding: 0.65rem 0.9rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+
+        .role-select:hover {
+            border-color: var(--primary-color);
+            background: var(--hover-bg);
+        }
+
+        .role-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.2);
+        }
+
+        .role-select option {
+            background: #091f36;
+            color: var(--text-primary);
+        }
+
+    .status-toggle {
+        position: relative;
+        width: 52px;
+        height: 28px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid var(--border-color);
+        border-radius: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .status-toggle:hover {
+            border-color: var(--primary-color);
+        }
+
+        .status-toggle.active {
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+        .status-toggle::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        .status-toggle.active::after {
+            transform: translateX(24px);
+        }
+
+    .toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 3rem;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+
+    .search-box {
+        flex: 1;
+        min-width: 300px;
+        position: relative;
+    }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.85rem 2.5rem 0.85rem 1.25rem;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+            .search-box input:focus {
+                outline: none;
+                border-color: var(--primary-color);
+                box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.2);
+                background: var(--hover-bg);
+            }
+
+            .search-box input::placeholder {
+                color: var(--text-secondary);
+            }
+
+        .search-box i {
+            position: absolute;
+            right: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+    .movies-table {
+        background: linear-gradient(135deg, var(--card-bg) 0%, var(--card-bg-light) 100%);
+        border-radius: 14px;
+        border: 2px solid var(--border-color);
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(9, 31, 54, 0.6);
+        margin-bottom: 3rem;
+        backdrop-filter: blur(10px);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    thead {
+        background: var(--dark-bg);
+        backdrop-filter: blur(10px);
+    }
+
+    th {
+        padding: 1.25rem;
+        text-align: left;
+        font-weight: 700;
+        color: var(--primary-color);
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    td {
+        padding: 1.25rem;
+        border-top: 1px solid var(--border-color);
+        color: var(--text-primary);
+    }
+
+    tbody tr {
+        transition: background 0.3s ease;
+    }
+
+        tbody tr:hover {
+            background: var(--hover-bg);
+        }
+
+    .movie-info {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+    }
+
+    .movie-details h4 {
+        margin: 0 0 0.5rem 0;
+        color: var(--text-primary);
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+
+    .movie-meta {
+        font-size: 0.80rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .action-btns {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .icon-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+        .icon-btn.edit {
+            background: rgba(0, 188, 212, 0.2);
+            color: var(--primary-color);
+        }
+
+            .icon-btn.edit:hover {
+                background: rgba(0, 188, 212, 0.4);
+                transform: translateY(-2px);
+            }
+
+        .icon-btn.delete {
+            background: rgba(220, 53, 69, 0.2);
+            color: var(--danger);
+        }
+
+            .icon-btn.delete:hover {
+                background: rgba(220, 53, 69, 0.4);
+                transform: translateY(-2px);
+            }
+
+        .icon-btn.view {
+            background: rgba(48, 209, 88, 0.2);
+            color: var(--success);
+        }
+
+            .icon-btn.view:hover {
+                background: rgba(48, 209, 88, 0.4);
+                transform: translateY(-2px);
+            }
+
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        backdrop-filter: blur(5px);
+    }
+
+        .modal.active {
+            display: flex;
+        }
+
+    .modal-content {
+        background: linear-gradient(135deg, var(--card-bg) 0%, var(--card-bg-light) 100%);
+        border-radius: 14px;
+        border: 2px solid var(--border-color);
+        width: 90%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        animation: slideUp 0.3s ease;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+    }
+
+    @@keyframes slideUp {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    .modal-header {
+        padding: 2rem;
+        border-bottom: 2px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+    .close-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 1.75rem;
+        cursor: pointer;
+        padding: 0;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+        .close-btn:hover {
+            color: var(--danger);
+            transform: rotate(90deg);
+        }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.75rem;
+    }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.85rem;
+            background: var(--dark-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+            .form-group input:focus,
+            .form-group select:focus {
+                outline: none;
+                border-color: var(--primary-color);
+                box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.2);
+                background: var(--hover-bg);
+            }
+
+            .form-group input::placeholder {
+                color: var(--text-secondary);
+            }
+
+            .form-group select option {
+                background: #091f36;
+                color: var(--text-primary);
+            }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .modal-footer {
+        padding: 2rem;
+        border-top: 2px solid var(--border-color);
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+    }
+
+    .btn {
+        padding: 0.85rem 1.75rem;
+        border-radius: 10px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: #ffffff;
+        box-shadow: 0 4px 15px rgba(0, 188, 212, 0.4);
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 188, 212, 0.6);
+        }
+
+    .btn-secondary {
+        background: var(--card-bg);
+        color: var(--text-primary);
+        border: 2px solid var(--border-color);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+        .btn-secondary:hover {
+            background: var(--hover-bg);
+            border-color: var(--primary-color);
+        }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: 3rem;
+        margin-bottom: 2rem;
+    }
+
+    .page-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        border: 2px solid var(--border-color);
+        background: var(--card-bg);
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+        .page-btn:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            background: var(--hover-bg);
+        }
+
+        .page-btn.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-color: var(--primary-color);
+            color: #ffffff;
+        }
+
+    .modal-content::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .modal-content::-webkit-scrollbar-track {
+        background: var(--dark-bg);
+        border-radius: 10px;
+    }
+
+    .modal-content::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #0f2862, #00bcd4);
+        border-radius: 10px;
+    }
+
+        .modal-content::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #00bcd4, #0f2862);
+        }
+
+    .user-detail-card {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        background: var(--dark-bg);
+        border-radius: 12px;
+        border: 2px solid var(--border-color);
+        margin-bottom: 2rem;
+    }
+
+    .user-detail-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.75rem;
+        color: white;
+        border: 3px solid var(--border-color);
+        flex-shrink: 0;
+    }
+
+    .user-detail-info h3 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+
+    .detail-item {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem;
+        background: var(--dark-bg);
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+    }
+
+        .detail-item i {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+            width: 24px;
+            text-align: center;
+            flex-shrink: 0;
+            margin-top: 0.25rem;
+        }
+
+        .detail-item label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-bottom: 0.35rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-item p {
+            margin: 0;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+    @@media (max-width: 768px) {
+        .user-stats
+
+    {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+
+    .toolbar {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .search-box {
+        width: 100%;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 1.5rem;
+    }
+
+    table {
+        font-size: 0.85rem;
+    }
+
+    td, th {
+        padding: 0.85rem;
+    }
+
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    }
+
+    @@media (max-width: 576px) {
+        .user-stats
+
+    {
+        grid-template-columns: 1fr;
+    }
+
+    .icon-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 0.85rem;
+    }
+
+    .action-btns {
+        gap: 0.5rem;
+    }
+
+    .modal-content {
+        width: 95%;
+    }
+
+    .stat-mini {
+        gap: 1rem;
+        padding: 1.25rem;
+    }
+
+    .stat-mini-content h3 {
+        font-size: 1.5rem;
+    }
+
+    }
+
+    @@keyframes slideIn {
+        from
+
+    {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    }
+
+    @@keyframes slideOut {
+        from
+
+    {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+
+    }
+</style>
+
+<div class="user-stats">
+    <div class="stat-mini">
+        <div class="stat-mini-icon" style="background: rgba(0, 188, 212, 0.2); color: var(--primary-color);">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-mini-content">
+            <h3>@ViewBag.TotalUsers</h3>
+            <p>Total Users</p>
+        </div>
+    </div>
+    <div class="stat-mini">
+        <div class="stat-mini-icon" style="background: rgba(48, 209, 88, 0.2); color: var(--success);">
+            <i class="fas fa-user-check"></i>
+        </div>
+        <div class="stat-mini-content">
+            <h3>@ViewBag.ActiveUsers</h3>
+            <p>Active Users</p>
+        </div>
+    </div>
+
+    <div class="stat-mini">
+        <div class="stat-mini-icon" style="background: rgba(220, 53, 69, 0.2); color: var(--danger);">
+            <i class="fas fa-user-times"></i>
+        </div>
+        <div class="stat-mini-content">
+            <h3>@ViewBag.SuspendedUsers</h3>
+            <p>Suspended</p>
+        </div>
+    </div>
+</div>
+
+<div class="toolbar">
+    <div class="search-box">
+        <form method="get" asp-action="Index">
+            <input type="text" name="search" value="@ViewBag.SearchQuery" placeholder="Search users by name, email, or username...">
+            <i class="fas fa-search"></i>
+        </form>
+    </div>
+</div>
+<div class="movies-table">
+    <table>
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Joined</th>
+                <th>Last Active</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var user in Model)
+                {
+                    var initials = string.IsNullOrEmpty(user.FirstName) && string.IsNullOrEmpty(user.LastName)
+                    ? user.Username.Substring(0, Math.Min(2, user.Username.Length)).ToUpper()
+                    : $"{user.FirstName?.FirstOrDefault()}{user.LastName?.FirstOrDefault()}".ToUpper();
+
+                    var displayName = !string.IsNullOrEmpty(user.FirstName) || !string.IsNullOrEmpty(user.LastName)
+                    ? $"{user.FirstName} {user.LastName}".Trim()
+                    : user.Username;
+
+                    var colors = new[] {
+                        "linear-gradient(135deg, #667eea, #764ba2)",
+                        "linear-gradient(135deg, #f093fb, #f5576c)",
+                        "linear-gradient(135deg, #4facfe, #00f2fe)",
+                        "linear-gradient(135deg, #fa709a, #fee140)",
+                        "linear-gradient(135deg, #30cfd0, #330867)",
+                        "linear-gradient(135deg, #a8edea, #fed6e3)"
+                        };
+                    var colorIndex = Math.Abs(user.Id.GetHashCode()) % colors.Length;
+
+                    <tr>
+                        <td>
+                            <div class="movie-info">
+                                <div class="user-avatar-large" style="background: @colors[colorIndex];">
+                                    @initials
+                                </div>
+                                <div class="movie-details">
+                                    <h4>@displayName</h4>
+                                    <div class="movie-meta">@("@" + user.Username)</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>@user.Email</td>
+                        <td>
+                            <select class="role-select" data-user-id="@user.Id" onchange="updateRole(@user.Id, this.value)">
+                                @{
+                                    var isUserRole = user.Role == Movie_Advisor.Models.Role.User;
+                                    var isAdminRole = user.Role == Movie_Advisor.Models.Role.Admin;
+                                }
+                                <option value="User" selected="@isUserRole">User</option>
+                                <option value="Admin" selected="@isAdminRole">Admin</option>
+                            </select>
+                        </td>
+                        <td>@user.CreatedAt.ToString("MMM dd, yyyy")</td>
+                        <td>@(user.LastLogin.HasValue? GetTimeAgo(user.LastLogin.Value) : "Never")</td>
+                        <td>
+                            <div class="status-toggle @(user.IsActive ? "active" : "")"
+                                 data-user-id="@user.Id"
+                                 onclick="toggleStatus(@user.Id, this)"></div>
+                        </td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="icon-btn view" onclick="viewUser(@user.Id)" title="View Profile"><i class="fas fa-eye"></i></button>
+                                <button class="icon-btn edit" onclick="openEditModal(@user.Id)" title="Edit"><i class="fas fa-edit"></i></button>
+                                <button class="icon-btn delete" onclick="deleteUser(@user.Id, '@displayName')" title="Delete"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 3rem;">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                            <i class="fas fa-user-slash" style="font-size: 3rem; opacity: 0.3;"></i>
+
+                            @if (!string.IsNullOrEmpty(Context.Request.Query["search"]))
+                            {
+                                <div style="text-align: center;">
+                                    <p style="font-size: 1.2rem; margin-bottom: 0.5rem; font-weight: 600; color: #333;">No users found</p>
+                                    <p style="opacity: 0.7; margin-bottom: 1.5rem; color: #666;">
+                                        No results matching "<strong>@Context.Request.Query["search"]</strong>"
+                                    </p>
+                                    <a asp-controller="Users" asp-action="Index"
+                                       class="btn-clear-search">
+                                        <i class="fas fa-times-circle"></i> Clear Search
+                                    </a>
+                                </div>
+                            }
+                            else
+                            {
+                                <p style="font-size: 1.1rem; color: #666;">No users found</p>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (ViewBag.TotalPages > 1)
+{
+    <div class="pagination">
+        @if (ViewBag.CurrentPage > 1)
+        {
+            <a href="?page=@(ViewBag.CurrentPage - 1)&search=@ViewBag.SearchQuery" class="page-btn">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        }
+
+        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+        {
+            <a href="?page=@i&search=@ViewBag.SearchQuery"
+               class="page-btn @(i == ViewBag.CurrentPage ? "active" : "")">
+                @i
+            </a>
+        }
+
+        @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+        {
+            <a href="?page=@(ViewBag.CurrentPage + 1)&search=@ViewBag.SearchQuery" class="page-btn">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        }
+    </div>
+}
+
+<style>
+    /* Clear Search Button Styles */
+    .btn-clear-search {
+        display: inline-block;
+        padding: 12px 28px;
+        background: transparent;
+        border: 2px solid #667eea;
+        border-radius: 25px;
+        color: #667eea;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+
+        .btn-clear-search:hover {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-clear-search i {
+            margin-right: 8px;
+            font-size: 0.95rem;
+        }
+
+    /* Ensure pagination stays at the bottom */
+    .pagination {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Responsive design */
+    @@media (max-width: 768px) {
+        .btn-clear-search
+
+    {
+        padding: 10px 24px;
+        font-size: 0.95rem;
+    }
+
+    }
+</style>
+
+<!-- View User Modal -->
+<div class="modal" id="viewModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>User Details</h2>
+            <button class="close-btn" onclick="closeViewModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="user-detail-card">
+                <div class="user-detail-avatar" id="viewAvatar"></div>
+                <div class="user-detail-info">
+                    <h3 id="viewDisplayName"></h3>
+                    <p id="viewUsername" style="color: var(--text-secondary); margin: 0;"></p>
+                </div>
+            </div>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <i class="fas fa-envelope"></i>
+                    <div>
+                        <label>Email</label>
+                        <p id="viewEmail"></p>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-user-tag"></i>
+                    <div>
+                        <label>Role</label>
+                        <p id="viewRole"></p>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-toggle-on"></i>
+                    <div>
+                        <label>Status</label>
+                        <p id="viewStatus"></p>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-check-circle"></i>
+                    <div>
+                        <label>Verified</label>
+                        <p id="viewVerified"></p>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-calendar-plus"></i>
+                    <div>
+                        <label>Joined</label>
+                        <p id="viewJoined"></p>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-clock"></i>
+                    <div>
+                        <label>Last Login</label>
+                        <p id="viewLastLogin"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeViewModal()">Close</button>
+        </div>
+    </div>
+</div>
+<!-- Edit User Modal -->
+<div class="modal" id="editModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Edit User</h2>
+            <button class="close-btn" onclick="closeEditModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="editForm">
+                <input type="hidden" id="editUserId">
+                <div class="form-group">
+                    <label for="editUsername">Username *</label>
+                    <input type="text" id="editUsername" placeholder="johndoe" required>
+                </div>
+                <div class="form-group">
+                    <label for="editEmail">Email *</label>
+                    <input type="email" id="editEmail" placeholder="john.doe@email.com" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editRole">Role *</label>
+                        <select id="editRole" required>
+                            <option value="User">User</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editIsActive">Status *</label>
+                        <select id="editIsActive" required>
+                            <option value="true">Active</option>
+                            <option value="false">Suspended</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveUser()">
+                <i class="fas fa-save"></i>
+                Save Changes
+            </button>
+        </div>
+    </div>
+</div>
+@functions {
+    string GetTimeAgo(DateTime dateTime)
+    {
+        var timeSpan = DateTime.UtcNow - dateTime;
+        if (timeSpan.TotalMinutes < 1) return "Just now";
+        if (timeSpan.TotalMinutes < 60) return $"{(int)timeSpan.TotalMinutes} min ago";
+        if (timeSpan.TotalHours < 24) return $"{(int)timeSpan.TotalHours} hours ago";
+        if (timeSpan.TotalDays < 30) return $"{(int)timeSpan.TotalDays} days ago";
+        return dateTime.ToString("MMM dd, yyyy");
+    }
+}
+
+<script>
+    // Get anti-forgery token
+    function getAntiForgeryToken() {
+        return document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+    }
+
+    function updateRole(userId, role) {
+        console.log('=== UPDATE ROLE ===');
+        console.log('userId:', userId, 'type:', typeof userId);
+        console.log('role:', role, 'type:', typeof role);
+
+        const formData = new FormData();
+        formData.append('userId', userId);
+        formData.append('role', role);
+
+        fetch('/Users/UpdateRole', {
+            method: 'POST',
+            headers: {
+                'RequestVerificationToken': getAntiForgeryToken()
+            },
+            body: formData
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data);
+            if (data.success) {
+                showNotification('Role updated successfully', 'success');
+            } else {
+                showNotification(data.message || 'Error updating role', 'error');
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error updating role', 'error');
+            location.reload();
+        });
+    }
+
+    function toggleStatus(userId, element) {
+        console.log('=== TOGGLE STATUS ===');
+        console.log('userId:', userId, 'type:', typeof userId);
+
+        const formData = new FormData();
+        formData.append('userId', userId);
+
+        fetch('/Users/ToggleStatus', {
+            method: 'POST',
+            headers: {
+                'RequestVerificationToken': getAntiForgeryToken()
+            },
+            body: formData
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data);
+            if (data.success) {
+                element.classList.toggle('active');
+                showNotification(data.message, 'success');
+            } else {
+                showNotification(data.message || 'Error updating status', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error updating status', 'error');
+        });
+    }
+
+    function viewUser(userId) {
+        console.log('=== VIEW USER ===');
+        console.log('userId:', userId, 'type:', typeof userId);
+        console.log('Fetching URL:', `/Users/GetUserDetails?userId=${userId}`);
+
+        fetch(`/Users/GetUserDetails?userId=${userId}`)
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    const user = data.user;
+
+                    // Generate avatar with same colors as table
+                    const initials = (user.firstName && user.lastName)
+                        ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
+                        : user.username.substring(0, 2).toUpperCase();
+
+                    const colors = [
+                        "linear-gradient(135deg, #667eea, #764ba2)",
+                        "linear-gradient(135deg, #f093fb, #f5576c)",
+                        "linear-gradient(135deg, #4facfe, #00f2fe)",
+                        "linear-gradient(135deg, #fa709a, #fee140)",
+                        "linear-gradient(135deg, #30cfd0, #330867)",
+                        "linear-gradient(135deg, #a8edea, #fed6e3)"
+                    ];
+                    const colorIndex = Math.abs(user.id.toString().split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % colors.length;
+
+                    // Set avatar
+                    const avatarElement = document.getElementById('viewAvatar');
+                    avatarElement.textContent = initials;
+                    avatarElement.style.background = colors[colorIndex];
+
+                    // Set user info
+                    const displayName = (user.firstName || user.lastName)
+                        ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+                        : user.username;
+
+                    document.getElementById('viewDisplayName').textContent = displayName;
+                    document.getElementById('viewUsername').textContent = user.username;
+                    document.getElementById('viewEmail').textContent = user.email;
+
+                    // Set role with badge style
+                    const roleElement = document.getElementById('viewRole');
+                    roleElement.textContent = user.role;
+                    roleElement.style.color = user.role === 'Admin' ? 'var(--warning)' : 'var(--primary-color)';
+
+                    // Set status with color
+                    const statusElement = document.getElementById('viewStatus');
+                    statusElement.textContent = user.isActive ? 'Active' : 'Suspended';
+                    statusElement.style.color = user.isActive ? 'var(--success)' : 'var(--danger)';
+
+                    // Set verified status
+                    const verifiedElement = document.getElementById('viewVerified');
+                    verifiedElement.textContent = user.isVerified ? 'Yes' : 'No';
+                    verifiedElement.style.color = user.isVerified ? 'var(--success)' : 'var(--warning)';
+
+                    // Set dates
+                    document.getElementById('viewJoined').textContent = new Date(user.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+
+                    document.getElementById('viewLastLogin').textContent = user.lastLogin
+                        ? new Date(user.lastLogin).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })
+                        : 'Never';
+
+                    document.getElementById('viewModal').classList.add('active');
+                } else {
+                    showNotification(data.message || 'Error loading user details', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error loading user details', 'error');
+            });
+    }
+
+    // ✅ FIXED: Added missing closeViewModal function
+    function closeViewModal() {
+        document.getElementById('viewModal').classList.remove('active');
+    }
+
+    function openEditModal(userId) {
+        console.log('=== OPEN EDIT MODAL ===');
+        console.log('userId:', userId, 'type:', typeof userId);
+        console.log('Fetching URL:', `/Users/GetUserDetails?userId=${userId}`);
+
+        fetch(`/Users/GetUserDetails?userId=${userId}`)
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    const user = data.user;
+                    document.getElementById('editUserId').value = user.id;
+                    document.getElementById('editUsername').value = user.username;
+                    document.getElementById('editEmail').value = user.email;
+                    document.getElementById('editRole').value = user.role;
+                    document.getElementById('editIsActive').value = user.isActive.toString();
+                    document.getElementById('editModal').classList.add('active');
+                } else {
+                    showNotification(data.message || 'Error loading user', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error loading user', 'error');
+            });
+    }
+
+    // ✅ FIXED: Added missing closeEditModal function
+    function closeEditModal() {
+        document.getElementById('editModal').classList.remove('active');
+    }
+
+    function saveUser() {
+        console.log('=== SAVE USER ===');
+
+        const userId = document.getElementById('editUserId').value;
+        const username = document.getElementById('editUsername').value;
+        const email = document.getElementById('editEmail').value;
+        const role = document.getElementById('editRole').value;
+        const isActive = document.getElementById('editIsActive').value;
+
+        console.log('Form values:');
+        console.log('userId:', userId, 'type:', typeof userId);
+        console.log('username:', username);
+        console.log('email:', email);
+        console.log('role:', role);
+        console.log('isActive:', isActive);
+
+        const formData = new FormData();
+        formData.append('userId', userId);
+        formData.append('username', username);
+        formData.append('email', email);
+        formData.append('role', role);
+        formData.append('isActive', isActive);
+
+        fetch('/Users/UpdateUser', {
+            method: 'POST',
+            headers: {
+                'RequestVerificationToken': getAntiForgeryToken()
+            },
+            body: formData
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data);
+            if (data.success) {
+                showNotification('User updated successfully', 'success');
+                closeEditModal();
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification(data.message || 'Error updating user', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error updating user', 'error');
+        });
+    }
+
+    function deleteUser(userId, displayName) {
+        console.log('=== DELETE USER ===');
+        console.log('userId:', userId, 'type:', typeof userId);
+        console.log('displayName:', displayName);
+
+        // Show custom delete confirmation modal
+        showDeleteConfirmation(displayName, () => {
+            const formData = new FormData();
+            formData.append('userId', userId);
+
+            fetch('/Users/DeleteUser', {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': getAntiForgeryToken()
+                },
+                body: formData
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    showNotification('User deleted successfully', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showNotification(data.message || 'Error deleting user', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error deleting user', 'error');
+            });
+        });
+    }
+
+    function showDeleteConfirmation(displayName, onConfirm) {
+        // Create modal overlay
+        const modal = document.createElement('div');
+        modal.className = 'modal active';
+        modal.style.zIndex = '3000';
+
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h2>Confirm Delete</h2>
+                    <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div style="text-align: center; padding: 1rem 0;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: var(--danger); margin-bottom: 1rem;"></i>
+                        <h3 style="margin: 0 0 1rem 0; color: var(--text-primary);">Are you sure?</h3>
+                        <p style="color: var(--text-secondary); margin: 0 0 0.5rem 0;">You are about to delete:</p>
+                        <p style="color: var(--text-primary); font-weight: 700; font-size: 1.1rem; margin: 0 0 1rem 0;">${displayName}</p>
+                        <p style="color: var(--danger); font-weight: 600;">This action cannot be undone!</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </button>
+                    <button class="btn" style="background: var(--danger); color: white;" id="confirmDeleteBtn">
+                        <i class="fas fa-trash"></i>
+                        Delete User
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Add click event to confirm button
+        document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+            modal.remove();
+            onConfirm();
+        });
+
+        // Close on outside click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            background: ${type === 'success' ? 'var(--success)' : 'var(--danger)'};
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+            font-weight: 600;
+        `;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+
+    // Close modal on outside click and ESC key
+    document.addEventListener('DOMContentLoaded', function() {
+        const editModal = document.getElementById('editModal');
+        const viewModal = document.getElementById('viewModal');
+
+        if (editModal) {
+            editModal.addEventListener('click', function(e) {
+                if (e.target === this) closeEditModal();
+            });
+        }
+
+        if (viewModal) {
+            viewModal.addEventListener('click', function(e) {
+                if (e.target === this) closeViewModal();
+            });
+        }
+
+        // Close modals on ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (editModal && editModal.classList.contains('active')) {
+                    closeEditModal();
+                }
+                if (viewModal && viewModal.classList.contains('active')) {
+                    closeViewModal();
+                }
+            }
+        });
+
+        // Search on enter
+        const searchInput = document.querySelector('.search-box input');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.target.closest('form').submit();
+                }
+            });
+        }
+    });
+</script>

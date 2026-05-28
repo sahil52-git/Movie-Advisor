@@ -1,0 +1,1996 @@
+﻿@model Movie_Advisor.ViewModels.MovieDetailsViewModel
+@{
+    ViewData["Title"] = Model?.Title ?? "Movie Details";
+    Layout = "~/Views/Shared/_AfterLogin.cshtml";
+}
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(circle at 20% 50%, rgba(0, 188, 212, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(102, 126, 234, 0.1) 0%, transparent 50%);
+                pointer-events: none;
+                z-index: 0;
+            }
+
+    .btn-watched {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 28px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: 2px solid rgba(102, 126, 234, 0.5);
+        border-radius: 30px;
+        color: white;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .btn-watched::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-watched:hover::before {
+            left: 100%;
+        }
+
+        .btn-watched:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-watched:disabled {
+            opacity: 0.6 !important;
+            cursor: wait !important;
+            transform: none !important;
+            pointer-events: none;
+        }
+
+        .btn-watched.watched {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            border-color: #22c55e;
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+        }
+
+            .btn-watched.watched:hover {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                box-shadow: 0 6px 25px rgba(34, 197, 94, 0.5);
+                transform: translateY(-3px);
+            }
+
+        .btn-watched i {
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-watched.watched i {
+            animation: checkPulse 0.5s ease;
+        }
+
+    @@keyframes checkPulse {
+        0%, 100%
+
+    {
+        transform: scale(1);
+    }
+
+    25% {
+        transform: scale(1.3);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    75% {
+        transform: scale(1.2);
+    }
+
+    }
+
+        .movie-detail-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .backdrop-header {
+            position: relative;
+            height: 500px;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .backdrop-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.4);
+        }
+
+        .backdrop-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 40px;
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 100%);
+        }
+
+        .movie-main-info {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .poster-section {
+            position: relative;
+        }
+
+        .movie-poster-large {
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 188, 212, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+            .movie-poster-large:hover {
+                transform: translateY(-10px);
+            }
+
+        .poster-placeholder {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 5rem;
+            height: 480px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .rating-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 215, 0, 0.95);
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .movie-info-main {
+            color: white;
+        }
+
+        .movie-title-large {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            color: white;
+            background: linear-gradient(135deg, #00BCD4, #26C6DA, #4DD0E1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .movie-tagline {
+            font-size: 1.3rem;
+            font-style: italic;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 25px;
+            padding-left: 20px;
+            border-left: 4px solid #00BCD4;
+        }
+
+        .movie-meta-info {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
+        .meta-item {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 10px 18px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+            .meta-item:hover {
+                background: rgba(255, 255, 255, 0.15);
+                transform: translateY(-2px);
+            }
+
+        .genre-badge {
+            background: linear-gradient(135deg, rgba(0, 188, 212, 0.2), rgba(38, 198, 218, 0.2));
+            border: 1px solid rgba(0, 188, 212, 0.5);
+            color: #4DD0E1;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 30px 0;
+        }
+
+        .btn-action {
+            padding: 14px 28px;
+            border-radius: 30px;
+            border: none;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .btn-action::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+                transition: left 0.5s;
+            }
+
+            .btn-action:hover::before {
+                left: 100%;
+            }
+
+        .btn-primary-action {
+            background: linear-gradient(135deg, #00BCD4, #26C6DA);
+            color: white;
+            box-shadow: 0 5px 20px rgba(0, 188, 212, 0.4);
+        }
+
+            .btn-primary-action:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 30px rgba(0, 188, 212, 0.6);
+                color: white;
+            }
+
+        .btn-outline-action {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+            .btn-outline-action:hover {
+                background: rgba(255, 255, 255, 0.15);
+                border-color: rgba(0, 188, 212, 0.8);
+                transform: translateY(-3px);
+                box-shadow: 0 5px 20px rgba(0, 188, 212, 0.3);
+                color: white;
+            }
+
+        .btn-watchlist {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 28px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(0, 188, 212, 0.5);
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+            .btn-watchlist::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+                transition: left 0.5s;
+            }
+
+            .btn-watchlist:hover::before {
+                left: 100%;
+            }
+
+            .btn-watchlist:hover {
+                background: rgba(0, 188, 212, 0.2);
+                border-color: #00BCD4;
+                transform: translateY(-2px);
+                box-shadow: 0 5px 20px rgba(0, 188, 212, 0.3);
+            }
+
+            .btn-watchlist:disabled {
+                opacity: 0.6 !important;
+                cursor: wait !important;
+                transform: none !important;
+                pointer-events: none;
+            }
+
+            .btn-watchlist.in-watchlist {
+                background: linear-gradient(135deg, #00BCD4, #26C6DA);
+                border-color: #00BCD4;
+                box-shadow: 0 4px 15px rgba(0, 188, 212, 0.4);
+            }
+
+                .btn-watchlist.in-watchlist:hover {
+                    background: linear-gradient(135deg, #26C6DA, #4DD0E1);
+                    box-shadow: 0 6px 25px rgba(0, 188, 212, 0.5);
+                    transform: translateY(-3px);
+                }
+
+            .btn-watchlist i {
+                font-size: 1.2rem;
+                transition: all 0.3s ease;
+            }
+
+            .btn-watchlist.in-watchlist i {
+                animation: heartBeat 0.5s ease;
+            }
+
+        @@keyframes heartBeat {
+            0%, 100%
+
+        {
+            transform: scale(1);
+        }
+
+        25% {
+            transform: scale(1.2);
+        }
+
+        50% {
+            transform: scale(1.1);
+        }
+
+        75% {
+            transform: scale(1.15);
+        }
+
+        }
+
+        @@keyframes fadeIn {
+            from
+
+        {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+
+        }
+
+        @@keyframes scaleIn {
+            from
+
+        {
+            transform: scale(0.8);
+            opacity: 0;
+        }
+
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        }
+
+        @@keyframes spin {
+            0%
+
+        {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+
+        }
+
+        .movie-description {
+            font-size: 1.15rem;
+            line-height: 1.9;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border-left: 4px solid #00BCD4;
+        }
+
+        .card-custom {
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+            .card-custom:hover {
+                transform: translateY(-5px);
+                border-color: rgba(0, 188, 212, 0.3);
+            }
+
+        .card-title-custom {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(0, 188, 212, 0.3);
+        }
+
+        .video-player-wrapper {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            background: #000;
+        }
+
+            .video-player-wrapper iframe {
+                border-radius: 16px;
+            }
+
+        .loading-trailer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            color: white;
+            gap: 20px;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(0, 188, 212, 0.2);
+            border-top: 4px solid #00BCD4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* COMMENT SECTION STYLES */
+        .comments-section {
+            margin-top: 40px;
+        }
+
+        .comment-form {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+        }
+
+            .comment-form h5 {
+                color: white;
+                font-size: 1.3rem;
+                font-weight: 600;
+                margin-bottom: 20px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+        .comment-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            resize: vertical;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+            .comment-textarea::placeholder {
+                color: rgba(255, 255, 255, 0.5);
+            }
+
+            .comment-textarea:focus {
+                outline: none;
+                border-color: #00BCD4;
+                background: rgba(255, 255, 255, 0.12);
+                box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.1);
+            }
+
+        .char-counter {
+            text-align: right;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+            margin-top: 8px;
+        }
+
+            .char-counter.warning {
+                color: #FF9500;
+            }
+
+            .char-counter.danger {
+                color: #dc3545;
+            }
+
+        .btn-submit-comment {
+            margin-top: 15px;
+            background: linear-gradient(135deg, #00BCD4, #26C6DA);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+            .btn-submit-comment:hover:not(:disabled) {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 20px rgba(0, 188, 212, 0.4);
+            }
+
+            .btn-submit-comment:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                transform: none;
+            }
+
+        .comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+            .comments-list h5 {
+                color: white;
+                font-size: 1.3rem;
+                font-weight: 600;
+                margin-bottom: 20px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+        .comment-count {
+            background: rgba(0, 188, 212, 0.2);
+            color: #4DD0E1;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .comment-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @@keyframes fadeInUp {
+            from
+
+        {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        }
+
+        .comment-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(0, 188, 212, 0.3);
+            transform: translateX(5px);
+        }
+
+        .comment-item.editing {
+            background: rgba(33, 150, 243, 0.1);
+            border-color: rgba(33, 150, 243, 0.5);
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .comment-author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .author-avatar,
+        .comment-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00BCD4, #26C6DA);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(0, 188, 212, 0.3);
+        }
+
+        .author-name {
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .comment-date,
+        .comment-time {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+        }
+
+        .comment-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .comment-text {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.7;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .comment-edited-badge {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.8rem;
+            font-style: italic;
+            margin-left: 10px;
+        }
+
+        /* Comment Actions */
+        .comment-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .btn-comment-action {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+
+        .btn-edit-comment {
+            background: rgba(33, 150, 243, 0.2);
+            color: #64B5F6;
+            border: 1px solid rgba(33, 150, 243, 0.3);
+        }
+
+            .btn-edit-comment:hover {
+                background: rgba(33, 150, 243, 0.3);
+                transform: translateY(-2px);
+            }
+
+        .btn-delete-comment {
+            background: rgba(244, 67, 54, 0.2);
+            color: #EF5350;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+
+            .btn-delete-comment:hover {
+                background: rgba(244, 67, 54, 0.3);
+                transform: translateY(-2px);
+            }
+
+        /* Delete Confirmation Modal */
+        .delete-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .delete-modal {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: scaleIn 0.3s ease;
+        }
+
+        .delete-modal-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .delete-modal-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(244, 67, 54, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #EF5350;
+            font-size: 1.5rem;
+        }
+
+        .delete-modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+        }
+
+        .delete-modal-body {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .delete-modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn-modal {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-modal-cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+            .btn-modal-cancel:hover {
+                background: rgba(255, 255, 255, 0.2);
+                transform: translateY(-2px);
+            }
+
+        .btn-modal-delete {
+            background: linear-gradient(135deg, #f44336, #e53935);
+            color: white;
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+        }
+
+            .btn-modal-delete:hover {
+                background: linear-gradient(135deg, #e53935, #d32f2f);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
+            }
+
+            .btn-modal-delete:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+                transform: none;
+            }
+
+        /* Edit Form Styles */
+        .comment-edit-form {
+            margin-top: 15px;
+        }
+
+        .comment-edit-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(33, 150, 243, 0.5);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.95rem;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+            .comment-edit-textarea:focus {
+                outline: none;
+                border-color: #2196F3;
+                background: rgba(255, 255, 255, 0.12);
+                box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+            }
+
+        .comment-edit-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-save-edit, .btn-cancel-edit {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-save-edit {
+            background: linear-gradient(135deg, #00BCD4, #26C6DA);
+            color: white;
+        }
+
+            .btn-save-edit:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 188, 212, 0.4);
+            }
+
+        .btn-cancel-edit {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+            .btn-cancel-edit:hover {
+                background: rgba(255, 255, 255, 0.2);
+            }
+
+        .no-comments {
+            text-align: center;
+            padding: 60px 40px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+        }
+
+            .no-comments i {
+                font-size: 3rem;
+                margin-bottom: 15px;
+                opacity: 0.5;
+            }
+
+        .loading-comments {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+            .loading-comments .spinner {
+                width: 40px;
+                height: 40px;
+                margin: 0 auto 15px;
+                border: 3px solid rgba(0, 188, 212, 0.2);
+                border-top-color: #00BCD4;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+
+        .back-button-container {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 35px;
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+        }
+
+            .btn-back:hover {
+                background: linear-gradient(135deg, #00BCD4, #26C6DA);
+                border-color: #00BCD4;
+                color: white;
+                transform: translateY(-3px);
+                box-shadow: 0 8px 25px rgba(0, 188, 212, 0.4);
+            }
+
+            .btn-back svg {
+                width: 20px;
+                height: 20px;
+            }
+
+        /* RESPONSIVE STYLES */
+        @@media (max-width: 768px) {
+            .movie-main-info
+
+        {
+            grid-template-columns: 1fr;
+        }
+
+        .movie-title-large {
+            font-size: 2rem;
+        }
+
+        .backdrop-header {
+            height: 300px;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-action,
+        .btn-watchlist {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .comment-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .comment-actions {
+            flex-direction: column;
+        }
+
+        .btn-comment-action {
+            width: 100%;
+            justify-content: center;
+        }
+
+        }
+
+        @@media (max-width: 480px) {
+            .movie-title-large
+
+        {
+            font-size: 1.8rem;
+        }
+
+        .btn-watchlist {
+            padding: 12px 20px;
+            font-size: 0.95rem;
+        }
+
+        }
+    </style>
+
+<div class="movie-detail-container">
+    @if (!string.IsNullOrEmpty(Model?.BackdropUrl))
+    {
+        <div class="backdrop-header">
+            <img src="@Model.BackdropUrl" alt="@Model.Title backdrop" class="backdrop-image" />
+            <div class="backdrop-overlay">
+                <h1 style="font-size: 2.5rem; font-weight: 800; color: white; margin-bottom: 15px;">
+                    @Model.Title
+                </h1>
+                @if (!string.IsNullOrEmpty(Model?.Tagline))
+                {
+                    <p style="font-size: 1.2rem; font-style: italic; color: rgba(255, 255, 255, 0.8);">
+                        "@Model.Tagline"
+                    </p>
+                }
+            </div>
+        </div>
+    }
+
+    <div class="movie-main-info">
+        <div class="poster-section">
+            @if (!string.IsNullOrEmpty(Model?.PosterUrl))
+            {
+                <img src="@Model.PosterUrl" alt="@Model.Title" class="movie-poster-large" />
+            }
+            else
+            {
+                <div class="poster-placeholder">🎬</div>
+            }
+
+            @if (Model?.IMDBRating > 0)
+            {
+                <div class="rating-badge">
+                    ⭐ @Model.IMDBRating.ToString("0.0")
+                </div>
+            }
+        </div>
+
+        <div class="movie-info-main">
+            @if (string.IsNullOrEmpty(Model?.BackdropUrl))
+            {
+                <h1 class="movie-title-large">@(Model?.Title ?? "Unknown Title")</h1>
+
+                @if (!string.IsNullOrEmpty(Model?.Tagline))
+                {
+                    <p class="movie-tagline">@Model.Tagline</p>
+                }
+            }
+
+            <div class="movie-meta-info">
+                @if (!string.IsNullOrEmpty(Model?.Genre))
+                {
+                    @foreach (var genre in Model.GetGenres().Take(3))
+                    {
+                        <span class="meta-item genre-badge">🎭 @genre</span>
+                    }
+                }
+
+                @if (Model?.Duration > 0)
+                {
+                    <span class="meta-item">⏱️ @Model.GetFormattedDuration()</span>
+                }
+
+                @if (Model?.ReleaseYear > 0)
+                {
+                    <span class="meta-item">📅 @Model.ReleaseYear</span>
+                }
+
+                @if (!string.IsNullOrEmpty(Model?.Rating))
+                {
+                    <span class="meta-item">🔞 @Model.Rating</span>
+                }
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model?.Description))
+            {
+                <div class="movie-description">
+                    @Model.Description
+                </div>
+            }
+
+            <div class="action-buttons">
+                <a href="#trailer-section" class="btn-action btn-primary-action">
+                    ▶️ Watch Trailer
+                </a>
+
+                <!-- Replace the existing watchlist button with this -->
+                <button id="watchlistBtn"
+                        class="btn-watchlist"
+                        onclick="toggleWatchlist(@Model.Id, '@Model.Title.Replace("'", "\\'")' )">
+                    <i class="fas fa-heart"></i>
+                    <span id="watchlistText">Add to Watchlist</span>
+                </button>
+
+                <button id="watchedBtn"
+                        class="btn-action btn-watched"
+                        onclick="toggleWatched(@Model.Id, '@Model.Title.Replace("'", "\\'")' )">
+                    <i class="far fa-eye"></i>
+                    <span id="watchedText">Mark as Watched</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-custom" id="trailer-section">
+        <h4 class="card-title-custom">🎬 Official Trailer</h4>
+        <div class="video-player-wrapper">
+            <div id="trailerContainer" class="ratio ratio-16x9">
+                <div class="loading-trailer">
+                    <div class="loading-spinner"></div>
+                    <p style="font-size: 1.2rem;">Loading trailer...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-custom comments-section">
+        <h4 class="card-title-custom">💬 Comments & Discussion</h4>
+
+        <!-- Comment Form -->
+        <div class="comment-form">
+            <h5>
+                <span>✍️</span>
+                Share your thoughts
+            </h5>
+            <form id="commentForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="movieId" id="movieId" value="@Model.Id" />
+                <textarea id="commentText"
+                          name="commentText"
+                          class="comment-textarea"
+                          placeholder="What did you think about this movie? Share your review here..."
+                          maxlength="2000"
+                          required></textarea>
+                <div class="char-counter" id="charCounter">0 / 2000 characters</div>
+                <button type="submit" class="btn-submit-comment" id="submitCommentBtn">
+                    <span>📝</span>
+                    Post Comment
+                </button>
+            </form>
+        </div>
+
+        <!-- Comments List -->
+        <div class="comments-list">
+            <h5>
+                <span>💭</span>
+                User Reviews
+                <span class="comment-count" id="commentCount">0</span>
+            </h5>
+            <div id="commentsContainer">
+                <div class="loading-comments">
+                    <div class="spinner"></div>
+                    <p>Loading comments...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="back-button-container">
+        <a href="#" id="backButton" class="btn-back">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Back
+        </a>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        // ========================================
+        // NOTIFICATION SYSTEM
+        // ========================================
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? 'linear-gradient(135deg, #4caf50, #45a049)' :
+                              type === 'error' ? 'linear-gradient(135deg, #f44336, #e53935)' :
+                              'linear-gradient(135deg, #2196F3, #1976D2)'};
+                color: white;
+                padding: 16px 24px;
+                border-radius: 12px;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+                z-index: 10000;
+                font-weight: 600;
+                font-size: 1rem;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                animation: slideInRight 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+                max-width: 400px;
+            `;
+
+            const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+            notification.innerHTML = `
+                <span style="font-size: 1.3rem; font-weight: bold;">${icon}</span>
+                <span>${message}</span>
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3500);
+        }
+
+        const style = document.createElement('style');
+        style.textContent = `
+            @@keyframes slideInRight {
+                from {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @@keyframes slideOutRight {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+            }
+            @@keyframes fadeOut {
+                from {
+                    opacity: 1;
+                }
+                to {
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkWatchlistStatus(@Model.Id);
+        });
+
+        function checkWatchlistStatus(movieId) {
+            const btn = document.getElementById('watchlistBtn');
+            const text = document.getElementById('watchlistText');
+            const icon = document.querySelector('#watchlistBtn i');
+
+            if (!btn) return;
+
+            btn.disabled = true;
+            btn.style.opacity = '0.6';
+            btn.style.cursor = 'wait';
+
+            fetch(`/Advisor/CheckInWatchlist?movieId=${movieId}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.inWatchlist) {
+                        btn.classList.add('in-watchlist');
+                        text.textContent = 'In Watchlist';
+                        icon.className = 'fas fa-heart';
+                    } else {
+                        btn.classList.remove('in-watchlist');
+                        text.textContent = 'Add to Watchlist';
+                        icon.className = 'far fa-heart';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking watchlist:', error);
+                    btn.classList.remove('in-watchlist');
+                    text.textContent = 'Add to Watchlist';
+                    icon.className = 'far fa-heart';
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                });
+        }
+
+        function toggleWatchlist(movieId, movieTitle) {
+            const btn = document.getElementById('watchlistBtn');
+            const text = document.getElementById('watchlistText');
+            const icon = document.querySelector('#watchlistBtn i');
+
+            if (!btn) return;
+
+            const isInWatchlist = btn.classList.contains('in-watchlist');
+            const action = isInWatchlist ? 'RemoveFromWatchlist' : 'AddToWatchlist';
+
+            btn.disabled = true;
+            btn.style.opacity = '0.6';
+            text.textContent = isInWatchlist ? 'Removing...' : 'Adding...';
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+            if (!token) {
+                console.error('Anti-forgery token not found');
+                showNotification('Security token missing. Please refresh the page.', 'error');
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                text.textContent = isInWatchlist ? 'In Watchlist' : 'Add to Watchlist';
+                return;
+            }
+
+            fetch(`/Advisor/${action}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `movieId=${movieId}&__RequestVerificationToken=${encodeURIComponent(token)}`
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    if (isInWatchlist) {
+                        btn.classList.remove('in-watchlist');
+                        text.textContent = 'Add to Watchlist';
+                        icon.className = 'far fa-heart';
+                        showNotification(data.message || 'Removed from watchlist', 'success');
+                    } else {
+                        btn.classList.add('in-watchlist');
+                        text.textContent = 'In Watchlist';
+                        icon.className = 'fas fa-heart';
+                        icon.style.animation = 'heartBeat 0.5s ease';
+                        setTimeout(() => icon.style.animation = '', 500);
+                        showNotification(data.message || 'Added to watchlist!', 'success');
+                    }
+                } else {
+                    showNotification(data.message || 'Error updating watchlist', 'error');
+                    console.error('Server error:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Failed to update watchlist. Please try again.', 'error');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                if (btn.classList.contains('in-watchlist')) {
+                    text.textContent = 'In Watchlist';
+                } else {
+                    text.textContent = 'Add to Watchlist';
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const textarea = document.getElementById('commentText');
+            const charCounter = document.getElementById('charCounter');
+
+            if (textarea && charCounter) {
+                textarea.addEventListener('input', function() {
+                    const length = this.value.length;
+                    charCounter.textContent = `${length} / 2000 characters`;
+
+                    if (length > 1800) {
+                        charCounter.classList.add('danger');
+                        charCounter.classList.remove('warning');
+                    } else if (length > 1500) {
+                        charCounter.classList.add('warning');
+                        charCounter.classList.remove('danger');
+                    } else {
+                        charCounter.classList.remove('warning', 'danger');
+                    }
+                });
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const movieId = @Model.Id;
+            loadComments(movieId);
+
+            const commentForm = document.getElementById('commentForm');
+            if (commentForm) {
+                commentForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    submitComment(movieId);
+                });
+            }
+        });
+
+        function loadComments(movieId) {
+            const container = document.getElementById('commentsContainer');
+            const countBadge = document.getElementById('commentCount');
+
+            if (!container) return;
+
+            container.innerHTML = `
+                <div class="loading-comments">
+                    <div class="spinner"></div>
+                    <p>Loading comments...</p>
+                </div>
+            `;
+
+            fetch(`/Advisor/GetMovieComments?movieId=${movieId}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        displayComments(data.comments);
+                        if (countBadge) {
+                            countBadge.textContent = data.comments.length;
+                        }
+                    } else {
+                        container.innerHTML = `
+                            <div class="no-comments">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <p>Failed to load comments</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading comments:', error);
+                    container.innerHTML = `
+                        <div class="no-comments">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <p>Error loading comments. Please try again.</p>
+                        </div>
+                    `;
+                });
+        }
+
+        function displayComments(comments) {
+            const container = document.getElementById('commentsContainer');
+            if (!container) return;
+
+            const currentUserId = @Model.CurrentUserId;
+            const isAdmin = @Model.IsAdmin.ToString().ToLower();
+
+            if (!comments || comments.length === 0) {
+                container.innerHTML = `
+                    <div class="no-comments">
+                        <i class="fas fa-comments"></i>
+                        <p>💬 No comments yet. Be the first to comment!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = comments.map(comment => {
+                const canEdit = currentUserId === comment.userId;
+                const canDelete = currentUserId === comment.userId || isAdmin;
+                const isEdited = comment.updatedAt && comment.updatedAt !== comment.createdAt;
+
+                return `
+                    <div class="comment-item" data-comment-id="${comment.id}" data-user-id="${comment.userId}">
+                        <div class="comment-header">
+                            <div class="comment-author">
+                                <div class="comment-avatar">${escapeHtml(comment.userInitial)}</div>
+                                <div class="comment-info">
+                                    <div class="author-name">
+                                        ${escapeHtml(comment.userName)}
+                                        ${isEdited ? '<span class="comment-edited-badge">(edited)</span>' : ''}
+                                    </div>
+                                    <div class="comment-time">${escapeHtml(comment.timeAgo)}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="comment-text">${escapeHtml(comment.commentText)}</div>
+                        ${canEdit || canDelete ? `
+                            <div class="comment-actions">
+                                ${canEdit ? `
+                                    <button class="btn-comment-action btn-edit-comment" onclick="editComment(${comment.id})">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                ` : ''}
+                                ${canDelete ? `
+                                    <button class="btn-comment-action btn-delete-comment" onclick="deleteComment(${comment.id})">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                ` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function submitComment(movieId) {
+            const textarea = document.getElementById('commentText');
+            const submitBtn = document.getElementById('submitCommentBtn');
+            const commentText = textarea?.value.trim();
+
+            if (!commentText) {
+                showNotification('Please enter a comment', 'error');
+                return;
+            }
+
+            if (commentText.length > 2000) {
+                showNotification('Comment is too long (max 2000 characters)', 'error');
+                return;
+            }
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+            if (!token) {
+                showNotification('Security token missing. Please refresh the page.', 'error');
+                return;
+            }
+
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span>⏳</span> Posting...';
+            }
+
+            const formData = new FormData();
+            formData.append('movieId', movieId);
+            formData.append('commentText', commentText);
+            formData.append('__RequestVerificationToken', token);
+
+            fetch('/Advisor/AddComment', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showNotification(data.message || 'Comment posted successfully!', 'success');
+                    textarea.value = '';
+
+                    const charCounter = document.getElementById('charCounter');
+                    if (charCounter) {
+                        charCounter.textContent = '0 / 2000 characters';
+                        charCounter.classList.remove('warning', 'danger');
+                    }
+
+                    loadComments(movieId);
+                } else {
+                    showNotification(data.message || 'Failed to post comment', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error posting comment:', error);
+                showNotification('Failed to post comment. Please try again.', 'error');
+            })
+            .finally(() => {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<span>📝</span> Post Comment';
+                }
+            });
+        }
+
+        function editComment(commentId) {
+            const commentItem = document.querySelector(`.comment-item[data-comment-id="${commentId}"]`);
+            if (!commentItem) return;
+
+            const commentTextDiv = commentItem.querySelector('.comment-text');
+            const commentActions = commentItem.querySelector('.comment-actions');
+            const currentText = commentTextDiv.textContent;
+
+            commentItem.classList.add('editing');
+
+            const editForm = document.createElement('div');
+            editForm.className = 'comment-edit-form';
+            editForm.innerHTML = `
+                <textarea class="comment-edit-textarea" maxlength="2000">${currentText}</textarea>
+                <div class="comment-edit-actions">
+                    <button class="btn-save-edit" onclick="saveEditComment(${commentId})">
+                        <i class="fas fa-check"></i> Save
+                    </button>
+                    <button class="btn-cancel-edit" onclick="cancelEditComment(${commentId})">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            `;
+
+            commentTextDiv.style.display = 'none';
+            if (commentActions) commentActions.style.display = 'none';
+
+            commentTextDiv.parentNode.insertBefore(editForm, commentTextDiv.nextSibling);
+        }
+
+        function saveEditComment(commentId) {
+            const commentItem = document.querySelector(`.comment-item[data-comment-id="${commentId}"]`);
+            if (!commentItem) return;
+
+            const textarea = commentItem.querySelector('.comment-edit-textarea');
+            const newText = textarea.value.trim();
+
+            if (!newText) {
+                showNotification('Comment cannot be empty', 'error');
+                return;
+            }
+
+            if (newText.length > 2000) {
+                showNotification('Comment is too long (max 2000 characters)', 'error');
+                return;
+            }
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+            if (!token) {
+                showNotification('Security token missing. Please refresh the page.', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('commentId', commentId);
+            formData.append('commentText', newText);
+            formData.append('__RequestVerificationToken', token);
+
+            fetch('/Advisor/EditComment', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showNotification(data.message || 'Comment updated successfully!', 'success');
+                    loadComments(@Model.Id);
+                } else {
+                    showNotification(data.message || 'Failed to update comment', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating comment:', error);
+                showNotification('Failed to update comment. Please try again.', 'error');
+            });
+        }
+
+        function cancelEditComment(commentId) {
+            const commentItem = document.querySelector(`.comment-item[data-comment-id="${commentId}"]`);
+            if (!commentItem) return;
+
+            const editForm = commentItem.querySelector('.comment-edit-form');
+            const commentTextDiv = commentItem.querySelector('.comment-text');
+            const commentActions = commentItem.querySelector('.comment-actions');
+
+            if (editForm) editForm.remove();
+
+            commentItem.classList.remove('editing');
+            commentTextDiv.style.display = '';
+            if (commentActions) commentActions.style.display = '';
+        }
+
+        function deleteComment(commentId) {
+            // Create modal overlay
+            const modalOverlay = document.createElement('div');
+            modalOverlay.className = 'delete-modal-overlay';
+            modalOverlay.innerHTML = `
+                <div class="delete-modal">
+                    <div class="delete-modal-header">
+                        <div class="delete-modal-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h3 class="delete-modal-title">Delete Comment?</h3>
+                    </div>
+                    <div class="delete-modal-body">
+                        <p>Are you sure you want to delete this comment? This action cannot be undone.</p>
+                    </div>
+                    <div class="delete-modal-actions">
+                        <button class="btn-modal btn-modal-cancel" onclick="closeDeleteModal()">
+                            Cancel
+                        </button>
+                        <button class="btn-modal btn-modal-delete" onclick="confirmDeleteComment(${commentId})">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modalOverlay);
+
+            // Close modal when clicking outside
+            modalOverlay.addEventListener('click', function(e) {
+                if (e.target === modalOverlay) {
+                    closeDeleteModal();
+                }
+            });
+        }
+
+        function closeDeleteModal() {
+            const modal = document.querySelector('.delete-modal-overlay');
+            if (modal) {
+                modal.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(() => modal.remove(), 300);
+            }
+        }
+
+        function confirmDeleteComment(commentId) {
+            const deleteBtn = document.querySelector('.btn-modal-delete');
+            if (deleteBtn) {
+                deleteBtn.disabled = true;
+                deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+            }
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+            if (!token) {
+                showNotification('Security token missing. Please refresh the page.', 'error');
+                closeDeleteModal();
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('commentId', commentId);
+            formData.append('__RequestVerificationToken', token);
+
+            fetch('/Advisor/DeleteComment', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    closeDeleteModal();
+                    showNotification(data.message || 'Comment deleted successfully!', 'success');
+                    loadComments(@Model.Id);
+                } else {
+                    closeDeleteModal();
+                    showNotification(data.message || 'Failed to delete comment', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting comment:', error);
+                closeDeleteModal();
+                showNotification('Failed to delete comment. Please try again.', 'error');
+            });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const movieId = @Model.Id;
+            loadTrailer(movieId);
+        });
+
+        function loadTrailer(movieId) {
+            const container = document.getElementById('trailerContainer');
+            if (!container) return;
+
+            fetch(`/Advisor/GetTrailer?id=${movieId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.videoId) {
+                        const embedUrl = `https://www.youtube.com/embed/${data.videoId}?rel=0&modestbranding=1`;
+                        container.innerHTML = `
+                            <iframe src="${embedUrl}"
+                                    allowfullscreen
+                                    style="border: none; border-radius: 16px;">
+                            </iframe>
+                        `;
+                    } else {
+                        container.innerHTML = `
+                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; color: white;">
+                                <i class="fas fa-video-slash" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
+                                <p style="font-size: 1.2rem;">${data.message || 'Trailer not available'}</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading trailer:', error);
+                    container.innerHTML = `
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; color: white;">
+                            <i class="fas fa-exclamation-circle" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
+                            <p style="font-size: 1.2rem;">Failed to load trailer</p>
+                        </div>
+                    `;
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const backButton = document.getElementById('backButton');
+            if (backButton) {
+                backButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (window.history.length > 1) {
+                        window.history.back();
+                    } else {
+                        window.location.href = '/Advisor/Home';
+                    }
+                });
+            }
+        });
+
+        console.log('MovieDetail scripts loaded successfully');
+
+      
+document.addEventListener('DOMContentLoaded', function() {
+    checkWatchedStatus(@Model.Id);
+    // Your existing code...
+});
+
+// ✅ ADD THIS: Check if movie is watched
+function checkWatchedStatus(movieId) {
+    const btn = document.getElementById('watchedBtn');
+    const text = document.getElementById('watchedText');
+    const icon = document.querySelector('#watchedBtn i');
+
+    if (!btn) return;
+
+    btn.disabled = true;
+    btn.style.opacity = '0.6';
+
+    fetch(`/Advisor/IsWatched?movieId=${movieId}`)
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            if (data.isWatched) {
+                btn.classList.add('watched');
+                text.textContent = 'Watched';
+                icon.className = 'fas fa-check-circle';
+            } else {
+                btn.classList.remove('watched');
+                text.textContent = 'Mark as Watched';
+                icon.className = 'far fa-eye';
+            }
+        })
+        .catch(error => {
+            console.error('Error checking watched status:', error);
+            btn.classList.remove('watched');
+            text.textContent = 'Mark as Watched';
+            icon.className = 'far fa-eye';
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        });
+}
+
+// ✅ ADD THIS: Toggle watched status
+function toggleWatched(movieId, movieTitle) {
+    const btn = document.getElementById('watchedBtn');
+    const text = document.getElementById('watchedText');
+    const icon = document.querySelector('#watchedBtn i');
+
+    if (!btn) return;
+
+    const isWatched = btn.classList.contains('watched');
+    const action = isWatched ? 'RemoveFromWatched' : 'MarkAsWatched';
+
+    btn.disabled = true;
+    btn.style.opacity = '0.6';
+    text.textContent = isWatched ? 'Removing...' : 'Marking...';
+
+    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+    if (!token) {
+        console.error('Anti-forgery token not found');
+        showNotification('Security token missing. Please refresh the page.', 'error');
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        text.textContent = isWatched ? 'Watched' : 'Mark as Watched';
+        return;
+    }
+
+    fetch(`/Advisor/${action}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `movieId=${movieId}&__RequestVerificationToken=${encodeURIComponent(token)}`
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            if (isWatched) {
+                // Remove watched status
+                btn.classList.remove('watched');
+                text.textContent = 'Mark as Watched';
+                icon.className = 'far fa-eye';
+                showNotification(data.message || 'Removed from watched list', 'success');
+            } else {
+                // Add watched status
+                btn.classList.add('watched');
+                text.textContent = 'Watched';
+                icon.className = 'fas fa-check-circle';
+                icon.style.animation = 'checkPulse 0.5s ease';
+                setTimeout(() => icon.style.animation = '', 500);
+                showNotification(data.message || 'Marked as watched!', 'success');
+            }
+        } else {
+            showNotification(data.message || 'Error updating watched status', 'error');
+            console.error('Server error:', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Failed to update watched status. Please try again.', 'error');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        if (btn.classList.contains('watched')) {
+            text.textContent = 'Watched';
+        } else {
+            text.textContent = 'Mark as Watched';
+        }
+    });
+}
+    </script>
+}

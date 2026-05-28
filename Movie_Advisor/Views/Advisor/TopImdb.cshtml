@@ -1,0 +1,397 @@
+﻿@using Movie_Advisor.ViewModels
+@model UserDashboardViewModel
+@{
+    ViewData["Title"] = "Top IMDB Movies";
+    Layout = "~/Views/Shared/_AfterLogin.cshtml";
+
+    var currentType = ViewBag.FilterType ?? "top250";
+    var currentDecade = ViewBag.SelectedDecade as string;
+    var currentGenre = ViewBag.SelectedGenre as string;
+    var currentAward = ViewBag.SelectedAward as string;
+}
+
+<style>
+
+    :root {
+        --primary-color: #00D4FF;
+        --gold: #f5c518;
+        --card-bg: #ffffff;
+        --border-color: #e0e0e0;
+        --text-primary: #000000;
+        --text-secondary: #666666;
+        --dark-bg: #f5f5f5;
+    }
+
+    body.dark-theme {
+        --card-bg: #1a1a1a;
+        --border-color: #2d2d2d;
+        --text-primary: #ffffff;
+        --text-secondary: #a0a0a0;
+        --dark-bg: #0d0d0d;
+    }
+
+    body.dark-theme {
+        background: var(--dark-bg) !important;
+    }
+
+    body {
+        background: var(--dark-bg);
+    }
+
+    .page-container {
+        display: flex;
+        min-height: calc(100vh - 120px);
+        gap: 2rem;
+        padding: 2rem;
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+
+    .rankings-sidebar {
+        width: 320px;
+        background: var(--card-bg);
+        border-radius: 14px;
+        border: 2px solid var(--border-color);
+        padding: 2rem;
+        height: fit-content;
+        position: sticky;
+        top: 100px;
+        box-shadow: 0 2px 12px rgba(0, 212, 255, 0.1);
+    }
+
+    .main-content {
+        flex: 1;
+        background: var(--card-bg);
+        border-radius: 14px;
+        border: 2px solid var(--border-color);
+        padding: 2.5rem;
+        box-shadow: 0 2px 12px rgba(0, 212, 255, 0.1);
+    }
+
+    .movie-row {
+        background: var(--card-bg);
+        border-radius: 14px;
+        border: 2px solid var(--border-color);
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 212, 255, 0.1);
+    }
+
+        .movie-row:hover {
+            transform: translateX(8px);
+            box-shadow: 0 8px 24px rgba(245, 197, 24, 0.2);
+            border-color: var(--gold);
+        }
+
+    .rank-number {
+        font-size: 2.5rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, var(--gold), #e6b800);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        min-width: 70px;
+        text-align: center;
+    }
+
+    .movie-poster-small {
+        width: 100px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .movie-details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .movie-title-large {
+        color: var(--text-primary);
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .imdb-rating {
+        background: linear-gradient(135deg, var(--gold), #e6b800);
+        color: #000000;
+        padding: 0.5rem 0.85rem;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .ranking-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: var(--text-primary);
+        text-decoration: none;
+        padding: 0.85rem 1rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border-radius: 10px;
+        border: 2px solid transparent;
+        margin-bottom: 0.5rem;
+    }
+
+        .ranking-item.active {
+            background: linear-gradient(135deg, var(--gold), #e6b800);
+            color: #000000;
+            border-color: var(--gold);
+        }
+
+        .ranking-item:hover {
+            background: rgba(245, 197, 24, 0.05);
+            border-color: var(--gold);
+            color: var(--gold);
+            text-decoration: none;
+        }
+
+    .action-btn-large {
+        background: rgba(0, 212, 255, 0.1);
+        border: 2px solid rgba(0, 212, 255, 0.3);
+        color: var(--primary-color);
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .action-btn-large:hover {
+            background: var(--primary-color);
+            color: #000000;
+            transform: translateY(-2px);
+        }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-top: 2.5rem;
+    }
+
+        .pagination a, .pagination span {
+            padding: 0.75rem 1rem;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 10px;
+            border: 2px solid var(--border-color);
+            font-weight: 600;
+            min-width: 45px;
+            text-align: center;
+        }
+
+        .pagination .active {
+            background: linear-gradient(135deg, var(--gold), #e6b800);
+            color: #000000;
+        }
+</style>
+
+<div class="page-container">
+
+    <div class="rankings-sidebar">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title" style="color: var(--text-primary); font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.75rem;">
+                <i class="fas fa-trophy" style="color: var(--gold);"></i>
+                Top IMDB
+            </h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0;">Highest rated movies of all time</p>
+        </div>
+
+        <div class="ranking-section" style="margin-bottom: 2rem;">
+            <div style="color: var(--text-primary); font-size: 1rem; font-weight: 700; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--border-color); display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-star" style="color: var(--gold);"></i>
+                Rankings
+            </div>
+            <a href="@Url.Action("TopIMDB", "Advisor", new { type = "top250" })" class="ranking-item @(currentType == "top250" ? "active" : "")">
+                <i class="fas fa-award"></i>
+                Top 250
+            </a>
+            <a href="@Url.Action("TopIMDB", "Advisor", new { type = "top100" })" class="ranking-item @(currentType == "top100" ? "active" : "")">
+                <i class="fas fa-medal"></i>
+                Top 100
+            </a>
+            <a href="@Url.Action("TopIMDB", "Advisor", new { type = "top50" })" class="ranking-item @(currentType == "top50" ? "active" : "")">
+                <i class="fas fa-crown"></i>
+                Top 50
+            </a>
+            <a href="@Url.Action("TopIMDB", "Advisor", new { type = "recent" })" class="ranking-item @(currentType == "recent" ? "active" : "")">
+                <i class="fas fa-fire"></i>
+                Recent Top Rated
+            </a>
+        </div>
+
+        <div class="ranking-section" style="margin-bottom: 2rem;">
+            <div style="color: var(--text-primary); font-size: 1rem; font-weight: 700; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--border-color); display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-calendar"></i>
+                By Decade
+            </div>
+            <a href="@Url.Action("TopIMDB", "Advisor", new { decade = "2020s" })" class="ranking-item @(currentDecade == "2020s" ? "active" : "")">
+                <i class="fas fa-angle-right"></i>
+                2020s
+            </a>
+            <a href="@Url.Action("TopIMDB", "Advisor", new { decade = "2010s" })" class="ranking-item @(currentDecade == "2010s" ? "active" : "")">
+                <i class="fas fa-angle-right"></i>
+                2010s
+            </a>
+            <a href="@Url.Action("TopIMDB", "Advisor", new { decade = "2000s" })" class="ranking-item @(currentDecade == "2000s" ? "active" : "")">
+                <i class="fas fa-angle-right"></i>
+                2000s
+            </a>
+            <a href="@Url.Action("TopIMDB", "Advisor", new { decade = "1990s" })" class="ranking-item @(currentDecade == "1990s" ? "active" : "")">
+                <i class="fas fa-angle-right"></i>
+                1990s
+            </a>
+            <a href="@Url.Action("TopIMDB", "Advisor", new { decade = "1980s" })" class="ranking-item @(currentDecade == "1980s" ? "active" : "")">
+                <i class="fas fa-angle-right"></i>
+                1980s
+            </a>
+            <a href="@Url.Action("TopIMDB", "Advisor", new { decade = "classics" })" class="ranking-item @(currentDecade == "classics" ? "active" : "")">
+                <i class="fas fa-film"></i>
+                Classics
+            </a>
+        </div>
+
+        <div class="ranking-section">
+            <div style="color: var(--text-primary); font-size: 1rem; font-weight: 700; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--border-color); display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-masks-theater"></i>
+                By Genre
+            </div>
+            <a href="@Url.Action("TopIMDB", "Advisor", new { genre = "drama" })" class="ranking-item @(currentGenre == "drama" ? "active" : "")">
+                <i class="fas fa-theater-masks"></i>
+                Drama
+            </a>
+            <a href="@Url.Action("TopIMDB", "Advisor", new { genre = "action" })" class="ranking-item @(currentGenre == "action" ? "active" : "")">
+                <i class="fas fa-fist-raised"></i>
+                Action
+            </a>
+            <a href="@Url.Action("TopIMDB", "Advisor", new { genre = "thriller" })" class="ranking-item @(currentGenre == "thriller" ? "active" : "")">
+                <i class="fas fa-bolt"></i>
+                Thriller
+            </a>
+            <a href="@Url.Action("TopIMDB", "Advisor", new { genre = "comedy" })" class="ranking-item @(currentGenre == "comedy" ? "active" : "")">
+                <i class="fas fa-laugh"></i>
+                Comedy
+            </a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2.5rem; padding-bottom: 2rem; border-bottom: 2px solid var(--border-color);">
+            <div>
+                <h1 style="color: var(--text-primary); font-size: 2rem; font-weight: 700; margin: 0 0 0.75rem 0; display: flex; align-items: center; gap: 0.75rem;">
+                    <i class="fas fa-trophy" style="color: var(--gold);"></i>
+                    Top IMDB Movies
+                </h1>
+                <p style="color: var(--text-secondary); font-size: 0.95rem; margin: 0;">
+                    Showing @(Model?.Movie?.Count() ?? 0) movies • Page @(ViewBag.CurrentPage ?? 1) of @(ViewBag.TotalPages ?? 1)
+                </p>
+            </div>
+        </div>
+
+        <div>
+            @if (Model?.Movie != null && Model.Movie.Any())
+            {
+                @for (int i = 0; i < Model.Movie.Count(); i++)
+                {
+                    var movie = Model.Movie.ElementAt(i);
+                    var rank = ((ViewBag.CurrentPage - 1) * 20) + i + 1;
+
+                    <div class="movie-row" onclick="window.location.href='@Url.Action("MovieDetail", "Advisor", new { id = movie.Id })'">
+                        <div class="rank-number">@rank</div>
+
+                        @if (!string.IsNullOrEmpty(movie.PosterUrl))
+                        {
+                            <img src="@movie.PosterUrl" alt="@movie.Title" class="movie-poster-small" />
+                        }
+                        else
+                        {
+                            <div class="movie-poster-small" style="display: flex; align-items: center; justify-content: center; background: var(--dark-bg); color: var(--text-secondary);">
+                                🎬
+                            </div>
+                        }
+
+                        <div class="movie-details">
+                            <h3 class="movie-title-large">@movie.Title</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; margin: 0;">
+                                @(string.IsNullOrEmpty(movie.Description) ? "An acclaimed masterpiece" : (movie.Description.Length > 150 ? movie.Description.Substring(0, 150) + "..." : movie.Description))
+                            </p>
+                            <div style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                    <i class="fas fa-calendar" style="color: var(--primary-color);"></i>
+                                    <span style="color: var(--text-secondary);">Year:</span>
+                                    <span style="color: var(--text-primary); font-weight: 700;">@(movie.ReleaseDate?.Year ?? 2024)</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                    <i class="fas fa-film" style="color: var(--primary-color);"></i>
+                                    <span style="color: var(--text-secondary);">Genre:</span>
+                                    <span style="color: var(--text-primary); font-weight: 700;">@(movie.Genre ?? "Drama")</span>
+                                </div>
+                                <div class="imdb-rating">
+                                    <i class="fas fa-star"></i>
+                                    @(movie.Rating?.ToString("0.0") ?? "8.0")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                    <i class="fas fa-film" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                    <p style="font-size: 1.2rem; font-weight: 600;">No movies found</p>
+                    <p>Try adjusting your filters</p>
+                </div>
+            }
+        </div>
+
+        @if (ViewBag.TotalPages > 1)
+        {
+            <div class="pagination">
+                @if (ViewBag.CurrentPage > 1)
+                {
+                    <a href="@Url.Action("TopIMDB", new { type = currentType, decade = currentDecade, genre = currentGenre, award = currentAward, page = ViewBag.CurrentPage - 1 })">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                }
+
+                <span class="active">@ViewBag.CurrentPage</span>
+
+                @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                {
+                    <a href="@Url.Action("TopIMDB", new { type = currentType, decade = currentDecade, genre = currentGenre, award = currentAward, page = ViewBag.CurrentPage + 1 })">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+            }
+        });
+    </script>
+}

@@ -1,0 +1,1482 @@
+﻿@model Movie_Advisor.ViewModels.UserDashboardViewModel
+@{
+    ViewData["Title"] = "Movies";
+    Layout = "~/Views/Shared/_AfterLogin.cshtml";
+}
+
+@Html.AntiForgeryToken()
+<style>
+    :root {
+        --primary-color: #00D4FF;
+        --secondary-color: #00BCD4;
+        --card-bg: #ffffff;
+        --border-color: #e0e0e0;
+        --text-primary: #000000;
+        --text-secondary: #666666;
+        --dark-bg: #f5f5f5;
+        --success: #30D158;
+        --danger: #FF3B30;
+        --warning: #FF9500;
+        --purple: #8b5cf6;
+        --input-bg: #ffffff;
+    }
+
+    body.dark-theme {
+        --card-bg: #1a1a1a;
+        --border-color: #2d2d2d;
+        --text-primary: #ffffff;
+        --text-secondary: #a0a0a0;
+        --dark-bg: #0d0d0d;
+        --input-bg: #1a1a1a;
+    }
+
+    body.dark-theme {
+        background: var(--dark-bg) !important;
+    }
+
+    * {
+        color: var(--text-primary);
+    }
+
+    body {
+        background: var(--dark-bg);
+    }
+
+    .movies-container {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2.5rem;
+        padding-bottom: 2rem;
+        border-bottom: 2px solid var(--border-color);
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+
+    .header-title-section {
+        flex: 1;
+    }
+
+    .page-title {
+        color: var(--text-primary);
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0 0 0.75rem 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+        .page-title i {
+            color: var(--primary-color);
+            font-size: 2.25rem;
+        }
+
+    .page-subtitle {
+        color: var(--text-secondary);
+        font-size: 1rem;
+        margin: 0;
+        font-weight: 500;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .theme-toggle {
+        background: var(--card-bg);
+        color: var(--text-primary);
+        border: 2px solid var(--border-color);
+        padding: 0.85rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+        .theme-toggle:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.2);
+        }
+
+        .theme-toggle i {
+            font-size: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .theme-toggle:hover i {
+            transform: rotate(20deg);
+        }
+
+    .view-toggle {
+        display: flex;
+        background: var(--dark-bg);
+        border-radius: 10px;
+        padding: 0.25rem;
+        gap: 0.25rem;
+    }
+
+    .view-btn {
+        padding: 0.65rem 1rem;
+        background: transparent;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: var(--text-secondary);
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+        .view-btn.active {
+            background: var(--card-bg);
+            color: var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .view-btn:hover:not(.active) {
+            color: var(--primary-color);
+        }
+
+    .filters-section {
+        background: var(--card-bg);
+        border-radius: 14px;
+        border: 2px solid var(--border-color);
+        padding: 2rem;
+        margin-bottom: 2.5rem;
+        box-shadow: 0 2px 12px rgba(0, 212, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+
+        .filters-section:hover {
+            box-shadow: 0 8px 24px rgba(0, 212, 255, 0.15);
+        }
+
+    .filters-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .filters-title {
+        color: var(--text-primary);
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+        .filters-title i {
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+
+    .clear-filters-btn {
+        background: transparent;
+        color: var(--danger);
+        border: 2px solid var(--danger);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+        .clear-filters-btn:hover {
+            background: var(--danger);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .filter-label {
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+        .filter-label i {
+            color: var(--primary-color);
+            font-size: 0.85rem;
+        }
+
+    .filter-input,
+    .filter-select {
+        width: 100%;
+        padding: 0.85rem 1rem;
+        background: var(--input-bg);
+        border: 2px solid var(--border-color);
+        border-radius: 10px;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+        .filter-input:focus,
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        .filter-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .filter-select option {
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+
+    .apply-filters-btn {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: #000000;
+        border: none;
+        padding: 0.85rem 2rem;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        width: 100%;
+        box-shadow: 0 4px 15px rgba(0, 212, 255, 0.25);
+    }
+
+        .apply-filters-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
+        }
+
+    .stats-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding: 1.25rem 1.75rem;
+        background: var(--card-bg);
+        border-radius: 12px;
+        border: 2px solid var(--border-color);
+        box-shadow: 0 2px 8px rgba(0, 212, 255, 0.1);
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .stat-icon {
+        width: 45px;
+        height: 45px;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #000000;
+        font-size: 1.1rem;
+    }
+
+    .stat-content {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .stat-value {
+        color: var(--text-primary);
+        font-size: 1.1rem;
+        font-weight: 700;
+    }
+
+    .movies-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1.75rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .movie-card {
+        background: var(--card-bg);
+        border-radius: 14px;
+        border: 2px solid var(--border-color);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+        box-shadow: 0 2px 8px rgba(0, 212, 255, 0.1);
+    }
+
+        .movie-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 30px rgba(0, 212, 255, 0.25);
+            border-color: var(--primary-color);
+        }
+
+    .movie-poster-wrapper {
+        position: relative;
+        width: 100%;
+        height: 360px;
+        overflow: hidden;
+        background: linear-gradient(135deg, var(--dark-bg), var(--border-color));
+        cursor: pointer;
+    }
+
+    .movie-poster {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .movie-card:hover .movie-poster {
+        transform: scale(1.1);
+    }
+
+    .movie-poster-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .play-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 212, 255, 0.95);
+        border-radius: 50%;
+        width: 70px;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: all 0.3s ease;
+        z-index: 10;
+        color: #000000;
+        font-size: 1.8rem;
+        box-shadow: 0 8px 24px rgba(0, 212, 255, 0.5);
+    }
+
+    .movie-card:hover .play-overlay {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+
+    .quality-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: linear-gradient(135deg, var(--warning), #ff8c00);
+        color: white;
+        padding: 0.5rem 0.85rem;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        z-index: 10;
+        box-shadow: 0 2px 8px rgba(255, 149, 0, 0.4);
+        transition: all 0.3s ease;
+    }
+
+    .movie-card:hover .quality-badge {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        transform: scale(1.1);
+    }
+
+    .rating-badge {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        background: rgba(0, 0, 0, 0.85);
+        color: white;
+        padding: 0.5rem 0.85rem;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        backdrop-filter: blur(4px);
+        border: 2px solid rgba(255, 193, 7, 0.5);
+    }
+
+        .rating-badge i {
+            color: #ffc107;
+            font-size: 0.75rem;
+        }
+
+    .movie-info {
+        padding: 1.5rem;
+    }
+
+    .movie-title {
+        color: var(--text-primary);
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        line-height: 1.4;
+        min-height: 50px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .movie-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .movie-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+        .movie-meta-item i {
+            color: var(--primary-color);
+            font-size: 0.8rem;
+            width: 16px;
+        }
+
+        .movie-meta-item strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+    .movie-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .action-btn {
+        flex: 1;
+        background: rgba(0, 212, 255, 0.1);
+        border: 2px solid rgba(0, 212, 255, 0.3);
+        color: var(--primary-color);
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        text-decoration: none;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .action-btn:hover::before {
+            left: 100%;
+        }
+
+        .action-btn:hover {
+            background: var(--primary-color);
+            color: #000000;
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.25);
+            text-decoration: none;
+        }
+
+        .action-btn.watchlist-btn {
+            position: relative;
+            overflow: hidden;
+        }
+
+            .action-btn.watchlist-btn:disabled {
+                opacity: 0.6 !important;
+                cursor: wait !important;
+                pointer-events: none;
+                transform: none !important;
+            }
+
+            .action-btn.watchlist-btn.in-watchlist {
+                background: linear-gradient(135deg, var(--success), #28a745) !important;
+                color: white !important;
+                border-color: var(--success) !important;
+                box-shadow: 0 2px 8px rgba(48, 209, 88, 0.3);
+            }
+
+                .action-btn.watchlist-btn.in-watchlist:hover {
+                    background: linear-gradient(135deg, #28a745, #20c997) !important;
+                    color: white !important;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(48, 209, 88, 0.4);
+                }
+
+                .action-btn.watchlist-btn.in-watchlist i {
+                    animation: none;
+                }
+
+            .action-btn.watchlist-btn i {
+                transition: transform 0.3s ease;
+            }
+
+    @@keyframes heartBeat {
+        0%, 100%
+
+    {
+        transform: scale(1);
+    }
+
+    25% {
+        transform: scale(1.3);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    75% {
+        transform: scale(1.2);
+    }
+
+    }
+
+    @@keyframes fadeInUp {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    @@keyframes pulse {
+        0%, 100%
+
+    {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 3rem;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+        .pagination a,
+        .pagination span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1rem;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 10px;
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+            min-width: 45px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+            .pagination a:hover {
+                background: rgba(0, 212, 255, 0.05);
+                border-color: var(--primary-color);
+                color: var(--primary-color);
+                text-decoration: none;
+                transform: translateY(-2px);
+            }
+
+        .pagination .active {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-color: var(--primary-color);
+            color: #000000;
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.25);
+        }
+
+        .pagination .disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+    .no-results {
+        text-align: center;
+        padding: 5rem 2rem;
+        color: var(--text-secondary);
+        grid-column: 1 / -1;
+        background: var(--card-bg);
+        border-radius: 14px;
+        border: 2px solid var(--border-color);
+    }
+
+        .no-results i {
+            font-size: 5rem;
+            color: var(--primary-color);
+            margin-bottom: 2rem;
+            opacity: 0.5;
+        }
+
+        .no-results h3 {
+            color: var(--text-primary);
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .no-results p {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 2rem;
+        }
+
+    .no-results-btn {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: #000000;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+        .no-results-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
+            text-decoration: none;
+            color: #000000;
+        }
+
+    @@media (max-width: 1200px) {
+        .movies-grid
+
+    {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+
+    }
+
+    @@media (max-width: 992px) {
+        .filters-grid
+
+    {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+
+    }
+
+    @@media (max-width: 768px) {
+        .movies-container
+
+    {
+        padding: 1rem;
+    }
+
+    .page-title {
+        font-size: 2rem;
+    }
+
+    .filters-section {
+        padding: 1.5rem;
+    }
+
+    .filters-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .movies-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .movie-poster-wrapper {
+        height: 280px;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .stats-bar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    }
+
+    @@media (max-width: 576px) {
+        .movies-grid
+
+    {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .movie-info {
+        padding: 1rem;
+    }
+
+    .movie-title {
+        font-size: 0.95rem;
+        min-height: 40px;
+    }
+
+    .play-overlay {
+        width: 50px;
+        height: 50px;
+        font-size: 1.3rem;
+    }
+
+    .movie-actions {
+        flex-direction: column;
+    }
+
+    .action-btn {
+        width: 100%;
+    }
+
+    }
+</style>
+<div class="movies-container">
+    <div class="page-header">
+        <div class="header-title-section">
+            <h1 class="page-title">
+                <i class="fas fa-video"></i>
+                Movies Collection
+            </h1>
+            <p class="page-subtitle">
+                Discover and explore amazing movies from around the world
+            </p>
+        </div>
+
+        <div class="header-actions">
+            <div class="view-toggle">
+                <button class="view-btn active" onclick="toggleView('grid')" title="Grid View">
+                    <i class="fas fa-th"></i>
+                </button>
+                <button class="view-btn" onclick="toggleView('list')" title="List View">
+                    <i class="fas fa-list"></i>
+                </button>
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+                <i class="fas fa-moon" id="themeIcon"></i>
+                <span id="themeText">Dark Mode</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- UPDATED FORM WITH HIDE WATCHED TOGGLE -->
+    <form method="get" asp-action="Movie" asp-controller="Advisor" id="filterForm">
+        <div class="filters-section">
+            <div class="filters-header">
+                <h3 class="filters-title">
+                    <i class="fas fa-filter"></i>
+                    Filter & Search
+                </h3>
+                <button type="button" class="clear-filters-btn" onclick="clearFilters()">
+                    <i class="fas fa-times-circle"></i>
+                    Clear Filters
+                </button>
+            </div>
+
+            <!-- ✅ NEW: Hide Watched Toggle -->
+            <div style="margin-bottom: 1.5rem;">
+                <div class="hide-watched-toggle" style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--dark-bg); border-radius: 10px; border: 2px solid var(--border-color); cursor: pointer;">
+                    <input type="checkbox"
+                           id="hideWatchedCheckbox"
+                           name="hideWatched"
+                           value="true"
+                           @(ViewBag.HideWatched == true ? "checked" : "")
+                           style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--primary-color);"
+                           onchange="this.form.submit()">
+                    <label for="hideWatchedCheckbox" style="color: var(--text-primary); font-size: 0.9rem; font-weight: 600; cursor: pointer; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-eye-slash" style="color: var(--primary-color);"></i>
+                        Hide Watched Movies
+                    </label>
+                </div>
+            </div>
+
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-search"></i>
+                        Search Movies
+                    </label>
+                    <input type="text"
+                           name="searchQuery"
+                           value="@Model.SearchQuery"
+                           class="filter-input"
+                           placeholder="Search by title...">
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-film"></i>
+                        Genre
+                    </label>
+                    <select name="selectedGenre" class="filter-select">
+                        <option value="">All Genres</option>
+                        @if (Model.Genres != null && Model.Genres.Any())
+                        {
+                            foreach (var g in Model.Genres)
+                            {
+                                <option value="@g.Name" selected="@(Model.SelectedGenre == g.Name)">
+                                    @g.Name (@g.MovieCount)
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-calendar-alt"></i>
+                        Release Year
+                    </label>
+                    <select name="selectedYear" class="filter-select">
+                        <option value="">All Years</option>
+                        @for (int year = DateTime.Now.Year; year >= 1980; year--)
+                        {
+                            <option value="@year" selected="@(Model.SelectedYear == year)">
+                                @year
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-sort"></i>
+                        Sort By
+                    </label>
+                    <select name="sortBy" class="filter-select">
+                        <option value="">Default</option>
+                        <option value="rating" selected="@(Model.SortBy == "rating")">Highest Rating</option>
+                        <option value="year" selected="@(Model.SortBy == "year")">Newest First</option>
+                        <option value="title" selected="@(Model.SortBy == "title")">Title (A-Z)</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="apply-filters-btn">
+                <i class="fas fa-check-circle"></i>
+                Apply Filters
+            </button>
+        </div>
+    </form>
+
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-icon">
+                <i class="fas fa-film"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-label">Total Movies</span>
+                <span class="stat-value">@(Model.Movie?.Count ?? 0)</span>
+            </div>
+        </div>
+
+        <div class="stat-item">
+            <div class="stat-icon">
+                <i class="fas fa-list"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-label">Current Page</span>
+                <span class="stat-value">@(Model.CurrentPage) / @(Model.TotalPages > 0 ? Model.TotalPages : 1)</span>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.SelectedGenre))
+        {
+            <div class="stat-item">
+                <div class="stat-icon">
+                    <i class="fas fa-tag"></i>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-label">Filtered By</span>
+                    <span class="stat-value">@Model.SelectedGenre</span>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="movies-grid">
+        @if (Model.Movie != null && Model.Movie.Count > 0)
+        {
+            foreach (var m in Model.Movie)
+            {
+                <div class="movie-card">
+                    <div class="movie-poster-wrapper" onclick="window.location.href='@Url.Action("MovieDetail", "Advisor", new { id = m.Id })'">
+                        <div class="quality-badge">HD</div>
+                        @if (m.Rating.HasValue)
+                        {
+                            <div class="rating-badge">
+                                <i class="fas fa-star"></i>
+                                @m.Rating.Value.ToString("0.0")
+                            </div>
+                        }
+                        <div class="play-overlay">▶</div>
+                        @if (!string.IsNullOrEmpty(m.PosterUrl))
+                        {
+                            <img src="@m.PosterUrl"
+                                 alt="@m.Title"
+                                 class="movie-poster"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                            <div class="movie-poster-placeholder" style="display:none;">
+                                <span>@m.Title</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="movie-poster-placeholder">
+                                <span>@(m.Title ?? "Untitled")</span>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="movie-info">
+                        <div class="movie-title">@(m.Title ?? "Untitled")</div>
+
+                        <div class="movie-meta">
+                            @if (!string.IsNullOrEmpty(m.Genre))
+                            {
+                                <div class="movie-meta-item">
+                                    <i class="fas fa-film"></i>
+                                    <strong>Genre:</strong> @m.Genre
+                                </div>
+                            }
+
+                            @if (m.ReleaseYear.HasValue || m.Year.HasValue)
+                            {
+                                <div class="movie-meta-item">
+                                    <i class="fas fa-calendar"></i>
+                                    <strong>Year:</strong> @(m.ReleaseYear?.ToString() ?? m.Year?.ToString())
+                                </div>
+                            }
+                        </div>
+
+                        <div class="movie-actions">
+                            <a href="@Url.Action("MovieDetail", "Advisor", new { id = m.Id })"
+                               class="action-btn">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Details</span>
+                            </a>
+                            <button class="action-btn watchlist-btn"
+                                    data-movie-id="@m.Id"
+                                    onclick="event.stopPropagation(); toggleWatchlist(@m.Id, this);">
+                                <i class="fas fa-plus"></i>
+                                <span>Watchlist</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="no-results">
+                <i class="fas fa-film"></i>
+                <h3>No Movies Found</h3>
+                <p>We couldn't find any movies matching your criteria. Try adjusting your filters.</p>
+                <a href="@Url.Action("Movie", "Advisor")" class="no-results-btn">
+                    <i class="fas fa-redo"></i>
+                    Reset Filters
+                </a>
+            </div>
+        }
+    </div>
+
+    <!-- ✅ UPDATED PAGINATION WITH hideWatched PARAMETER -->
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="pagination">
+            @if (Model.CurrentPage > 1)
+            {
+                <a href="?page=@(Model.CurrentPage - 1)&selectedGenre=@Model.SelectedGenre&searchQuery=@Model.SearchQuery&selectedYear=@Model.SelectedYear&sortBy=@Model.SortBy&hideWatched=@ViewBag.HideWatched">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </a>
+            }
+            else
+            {
+                <span class="disabled">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </span>
+            }
+
+            @{
+                int startPage = Math.Max(1, Model.CurrentPage - 2);
+                int endPage = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
+            }
+
+            @if (startPage > 1)
+            {
+                <a href="?page=1&selectedGenre=@Model.SelectedGenre&searchQuery=@Model.SearchQuery&selectedYear=@Model.SelectedYear&sortBy=@Model.SortBy&hideWatched=@ViewBag.HideWatched">1</a>
+                @if (startPage > 2)
+                {
+                    <span>...</span>
+                }
+            }
+
+            @for (int i = startPage; i <= endPage; i++)
+            {
+                if (i == Model.CurrentPage)
+                {
+                    <span class="active">@i</span>
+                }
+                else
+                {
+                    <a href="?page=@i&selectedGenre=@Model.SelectedGenre&searchQuery=@Model.SearchQuery&selectedYear=@Model.SelectedYear&sortBy=@Model.SortBy&hideWatched=@ViewBag.HideWatched">
+                        @i
+                    </a>
+                }
+            }
+
+            @if (endPage < Model.TotalPages)
+            {
+                @if (endPage < Model.TotalPages - 1)
+                {
+                    <span>...</span>
+                }
+                <a href="?page=@Model.TotalPages&selectedGenre=@Model.SelectedGenre&searchQuery=@Model.SearchQuery&selectedYear=@Model.SelectedYear&sortBy=@Model.SortBy&hideWatched=@ViewBag.HideWatched">@Model.TotalPages</a>
+            }
+
+            @if (Model.CurrentPage < Model.TotalPages)
+            {
+                <a href="?page=@(Model.CurrentPage + 1)&selectedGenre=@Model.SelectedGenre&searchQuery=@Model.SearchQuery&selectedYear=@Model.SelectedYear&sortBy=@Model.SortBy&hideWatched=@ViewBag.HideWatched">
+                    Next <i class="fas fa-chevron-right"></i>
+                </a>
+            }
+            else
+            {
+                <span class="disabled">
+                    Next <i class="fas fa-chevron-right"></i>
+                </span>
+            }
+        </nav>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // ========================================
+        // THEME TOGGLE
+        // ========================================
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+
+            body.classList.toggle('dark-theme');
+
+            if (body.classList.contains('dark-theme')) {
+                themeIcon.className = 'fas fa-sun';
+                themeText.textContent = 'Light Mode';
+                localStorage.setItem('theme', 'dark');
+                showNotification('Dark mode enabled', 'fas fa-moon');
+            } else {
+                themeIcon.className = 'fas fa-moon';
+                themeText.textContent = 'Dark Mode';
+                localStorage.setItem('theme', 'light');
+                showNotification('Light mode enabled', 'fas fa-sun');
+            }
+        }
+
+        // ========================================
+        // NOTIFICATION SYSTEM
+        // ========================================
+        function showNotification(message, icon) {
+            const notification = $('<div>')
+                .css({
+                    'position': 'fixed',
+                    'top': '2rem',
+                    'right': '2rem',
+                    'background': 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))',
+                    'color': '#000000',
+                    'padding': '1rem 1.5rem',
+                    'border-radius': '12px',
+                    'font-weight': '600',
+                    'box-shadow': '0 8px 24px rgba(0, 212, 255, 0.3)',
+                    'z-index': '10000',
+                    'display': 'flex',
+                    'align-items': 'center',
+                    'gap': '0.75rem'
+                })
+                .html(`<i class="${icon}"></i> ${message}`)
+                .appendTo('body')
+                .hide()
+                .fadeIn(200);
+
+            setTimeout(() => {
+                notification.fadeOut(300, () => notification.remove());
+            }, 2000);
+        }
+
+        // ========================================
+        // WATCHLIST FUNCTIONALITY
+        // ========================================
+        
+        // Check watchlist status for all visible movie cards
+        function checkAllWatchlistStatus() {
+            $('.watchlist-btn').each(function() {
+                const movieId = $(this).data('movie-id');
+                checkWatchlistStatus(movieId, $(this));
+            });
+        }
+
+        // Check individual movie watchlist status
+        function checkWatchlistStatus(movieId, button) {
+            fetch(`/Advisor/CheckInWatchlist?movieId=${movieId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.inWatchlist) {
+                        button.addClass('in-watchlist');
+                        button.find('i').removeClass('fa-plus').addClass('fa-check');
+                        button.find('span').text('In Watchlist');
+                    } else {
+                        button.removeClass('in-watchlist');
+                        button.find('i').removeClass('fa-check').addClass('fa-plus');
+                        button.find('span').text('Watchlist');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking watchlist:', error);
+                });
+        }
+
+        // Toggle watchlist (add/remove)
+        function toggleWatchlist(movieId, button) {
+            const $button = $(button);
+            const isInWatchlist = $button.hasClass('in-watchlist');
+            const action = isInWatchlist ? 'RemoveFromWatchlist' : 'AddToWatchlist';
+            
+            // Get anti-forgery token
+            const token = $('input[name="__RequestVerificationToken"]').val();
+            
+            if (!token) {
+                showNotification('Security token missing. Please refresh the page.', 'fas fa-exclamation-triangle');
+                return;
+            }
+            
+            // Disable button during request
+            $button.prop('disabled', true).css('opacity', '0.6');
+            
+            fetch(`/Advisor/${action}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `movieId=${movieId}&__RequestVerificationToken=${encodeURIComponent(token)}`
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    if (isInWatchlist) {
+                        // Removed from watchlist
+                        $button.removeClass('in-watchlist');
+                        $button.find('i').removeClass('fa-check').addClass('fa-plus');
+                        $button.find('span').text('Watchlist');
+                        showNotification('Removed from watchlist', 'fas fa-minus-circle');
+                    } else {
+                        // Added to watchlist
+                        $button.addClass('in-watchlist');
+                        $button.find('i').removeClass('fa-plus').addClass('fa-check');
+                        $button.find('span').text('In Watchlist');
+                        
+                        // Add heart animation
+                        $button.find('i').css('animation', 'heartBeat 0.5s ease');
+                        setTimeout(() => {
+                            $button.find('i').css('animation', '');
+                        }, 500);
+                        
+                        showNotification(data.message || 'Added to watchlist!', 'fas fa-check-circle');
+                    }
+                } else {
+                    showNotification(data.message || 'Error updating watchlist', 'fas fa-exclamation-circle');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Failed to update watchlist. Please try again.', 'fas fa-exclamation-triangle');
+            })
+            .finally(() => {
+                // Re-enable button
+                $button.prop('disabled', false).css('opacity', '1');
+            });
+        }
+
+        // ========================================
+        // VIEW TOGGLE
+        // ========================================
+        function toggleView(viewType) {
+            $('.view-btn').removeClass('active');
+            event.target.closest('.view-btn').classList.add('active');
+
+            const grid = $('.movies-grid');
+
+            if (viewType === 'list') {
+                grid.css({
+                    'grid-template-columns': '1fr',
+                    'gap': '1rem'
+                });
+                $('.movie-card').css({
+                    'display': 'flex',
+                    'flex-direction': 'row'
+                });
+                $('.movie-poster-wrapper').css({
+                    'width': '200px',
+                    'min-width': '200px',
+                    'height': 'auto'
+                });
+                showNotification('Switched to list view', 'fas fa-list');
+            } else {
+                grid.css({
+                    'grid-template-columns': 'repeat(auto-fill, minmax(240px, 1fr))',
+                    'gap': '1.75rem'
+                });
+                $('.movie-card').css({
+                    'display': 'block',
+                    'flex-direction': 'column'
+                });
+                $('.movie-poster-wrapper').css({
+                    'width': '100%',
+                    'min-width': 'auto',
+                    'height': '360px'
+                });
+                showNotification('Switched to grid view', 'fas fa-th');
+            }
+        }
+
+        function clearFilters() {
+            window.location.href = '@Url.Action("Movie", "Advisor")';
+        }
+
+        // ========================================
+        // DOCUMENT READY
+        // ========================================
+        $(document).ready(function() {
+            // Load saved theme
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                document.getElementById('themeIcon').className = 'fas fa-sun';
+                document.getElementById('themeText').textContent = 'Light Mode';
+            }
+
+            // Animate cards on load
+            $('.movie-card').each(function(index) {
+                $(this).css({
+                    'animation': `fadeInUp 0.5s ease forwards ${index * 0.05}s`,
+                    'opacity': '0'
+                });
+            });
+
+            // Check watchlist status for all movies
+            setTimeout(() => {
+                checkAllWatchlistStatus();
+            }, 500);
+
+            // Card hover effects
+            $('.movie-card').hover(
+                function() {
+                    $(this).find('.quality-badge').css({
+                        'background': 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))',
+                        'transform': 'scale(1.1)'
+                    });
+                },
+                function() {
+                    $(this).find('.quality-badge').css({
+                        'background': 'linear-gradient(135deg, var(--warning), #ff8c00)',
+                        'transform': 'scale(1)'
+                    });
+                }
+            );
+
+            // Scroll to top on pagination click
+            $('.pagination a').click(function(e) {
+                $('html, body').animate({
+                    scrollTop: 0
+                }, 400);
+            });
+
+            // Enter key submits filter form
+            $('.filter-input').keypress(function(e) {
+                if (e.which === 13) {
+                    $(this).closest('form').submit();
+                }
+            });
+
+            // Keyboard shortcuts
+            $(document).keydown(function(e) {
+                // 'D' key toggles theme
+                if (e.key === 'd' || e.key === 'D') {
+                    if (!$(e.target).is('input, textarea, select')) {
+                        toggleTheme();
+                    }
+                }
+
+                // '/' key focuses search
+                if (e.key === '/') {
+                    e.preventDefault();
+                    $('.filter-input[name="searchQuery"]').focus();
+                }
+            });
+        });
+
+        // ========================================
+        // ANIMATIONS
+        // ========================================
+        const style = document.createElement('style');
+        style.textContent = `
+            @@keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @@keyframes pulse {
+                0%, 100% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.05);
+                }
+            }
+
+            @@keyframes heartBeat {
+                0%, 100% { transform: scale(1); }
+                25% { transform: scale(1.3); }
+                50% { transform: scale(1.1); }
+                75% { transform: scale(1.2); }
+            }
+
+            .play-overlay {
+                animation: pulse 2s ease-in-out infinite;
+            }
+
+            .movie-card:hover .play-overlay {
+                animation: none;
+            }
+
+            /* Watchlist button in-watchlist state */
+            .action-btn.in-watchlist {
+                background: linear-gradient(135deg, var(--success), #28a745) !important;
+                color: white !important;
+                border-color: var(--success) !important;
+            }
+
+            .action-btn.in-watchlist:hover {
+                background: linear-gradient(135deg, #28a745, #20c997) !important;
+                transform: translateY(-2px);
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+}

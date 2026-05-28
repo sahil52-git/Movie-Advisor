@@ -1,0 +1,484 @@
+﻿@{
+    Layout = "~/Views/Shared/Authentication_Layout.cshtml";
+}
+@model Movie_Advisor.ViewModels.SignupViewModel;
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Account - MovieAdvisor</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+    <script src="https://www.google.com/recaptcha/api.js?render=6LfN6b0rAAAAAIYRbPqsxRq1OuRQ9do3D6ihyNOl"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Jost', sans-serif;
+            background: linear-gradient(135deg, #0f2862 0%, #091f36 100%);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(circle at 30% 20%, rgba(15, 40, 98, 0.3) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(9, 31, 54, 0.4) 0%, transparent 50%), radial-gradient(circle at 50% 50%, rgba(0, 188, 212, 0.1) 0%, transparent 40%);
+                z-index: -1;
+                pointer-events: none;
+            }
+
+        .main {
+            width: 420px;
+            background: rgba(30, 35, 45, 0.95);
+            border-radius: 20px;
+            padding: 50px;
+            position: relative;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 50px rgba(9, 31, 54, 0.8), 0 10px 25px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .signup {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .signup-title {
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 25px;
+            text-shadow: 0 2px 10px rgba(9, 31, 54, 0.8);
+            letter-spacing: 1px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            gap: 12px;
+        }
+
+        .password-container {
+            position: relative;
+            width: 90%;
+            display: flex;
+            align-items: center;
+        }
+
+        .textbox {
+            width: 90%;
+            padding: 15px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 16px;
+            color: white;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+            .textbox.password-input {
+                width: 100%;
+                padding-right: 50px;
+            }
+
+            .textbox::placeholder {
+                color: rgba(255, 255, 255, 0.6);
+            }
+
+            .textbox:focus {
+                outline: none;
+                border-color: #00bcd4;
+                background: rgba(255, 255, 255, 0.15);
+                box-shadow: 0 0 20px rgba(0, 188, 212, 0.3);
+            }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 18px;
+            user-select: none;
+            transition: color 0.3s ease;
+            z-index: 10;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .password-toggle:hover {
+                color: #00bcd4;
+            }
+
+        .eye-open::before {
+            content: "👁";
+            font-size: 16px;
+        }
+
+        .eye-closed::before {
+            content: "👁‍🗨";
+            font-size: 16px;
+        }
+
+        .text-danger {
+            color: #ff6b6b;
+            font-size: 12px;
+            width: 90%;
+            margin-top: -8px;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .signup-button {
+            width: 90%;
+            padding: 15px;
+            border: none;
+            background: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%);
+            color: black;
+            font-weight: 600;
+            font-size: 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+        }
+
+            .signup-button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(0, 188, 212, 0.4);
+            }
+
+            .signup-button:active {
+                transform: translateY(2px);
+            }
+
+            .signup-button:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+                transform: none;
+                box-shadow: none;
+            }
+
+        .error-message {
+            color: #ff6b6b;
+            width: 90%;
+            text-align: center;
+            margin: 10px 0;
+            font-weight: 500;
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .success-message {
+            color: #4caf50;
+            width: 90%;
+            text-align: center;
+            margin: 10px 0;
+            font-weight: 500;
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .signup-button .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top: 2px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 8px;
+        }
+
+        .signup-button.loading .spinner {
+            display: inline-block;
+        }
+
+        @@keyframes spin {
+            0%
+
+        {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+
+        }
+
+        .text-center {
+            text-align: center;
+            margin: 15px 0 10px 0;
+            width: 90%;
+        }
+
+        .login-link, .back-link {
+            color: #00bcd4;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+            .login-link:hover, .back-link:hover {
+                color: #26c6da;
+            }
+
+        .back-link-container {
+            width: 90%;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .login-text {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        @@media (max-width: 480px) {
+            .main
+
+        {
+            width: 90%;
+            padding: 30px 20px;
+            margin: 20px;
+        }
+
+        .signup-title {
+            font-size: 24px;
+        }
+
+        .textbox {
+            padding: 12px 15px;
+            font-size: 14px;
+        }
+
+            .textbox.password-input {
+                padding-right: 40px;
+            }
+
+        .signup-button {
+            padding: 12px;
+            font-size: 14px;
+        }
+
+        .password-toggle {
+            right: 10px;
+            font-size: 16px;
+        }
+
+        }
+    </style>
+</head>
+<body>
+    <div class="main">
+        <div class="signup">
+            <span class="signup-title">Create Account</span>
+
+            @if (!string.IsNullOrEmpty(ViewBag.Error))
+            {
+                <div class="error-message">
+                    @ViewBag.Error
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(TempData["Success"] as string))
+            {
+                <div class="success-message">
+                    @TempData["Success"]
+                </div>
+            }
+
+            <form method="post" asp-controller="User" asp-action="Signup" id="signupForm">
+                <input class="textbox" asp-for="Username" placeholder="Full name" />
+                <span asp-validation-for="Username" class="text-danger"></span>
+
+                <input class="textbox" asp-for="Email" type="email" placeholder="Email" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+
+                <div class="password-container">
+                    <input class="textbox password-input" asp-for="Password" type="password" placeholder="Password" id="password" required />
+                    <span class="password-toggle eye-open" onclick="togglePassword('password', this)"></span>
+                </div>
+                <span asp-validation-for="Password" class="text-danger"></span>
+
+                <input type="hidden" id="recaptchaToken" name="RecaptchaToken" />
+
+                <button class="signup-button" type="submit" id="submit-btn">
+                    Create Account
+                    <span class="spinner"></span>
+                </button>
+            </form>
+
+            <div class="text-center">
+                <span class="login-text">Have an account?</span><br>
+                <a asp-action="Login" asp-controller="User" class="login-link">Already have an account?</a>
+            </div>
+
+            <div class="back-link-container">
+                <a asp-action="Index" asp-controller="Home" class="back-link">Back</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.6.0.min.js"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.19.3/jquery.validate.min.js"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/mvc/5.2.6/jquery.validate.unobtrusive.min.js"></script>
+
+    <script>
+        const RECAPTCHA_SITE_KEY = '6LfN6b0rAAAAAIYRbPqsxRq1OuRQ9do3D6ihyNOl';
+
+        function togglePassword(fieldId, toggleIcon) {
+            const passwordField = document.getElementById(fieldId);
+            const isPassword = passwordField.type === 'password';
+
+            passwordField.type = isPassword ? 'text' : 'password';
+
+            if (isPassword) {
+                toggleIcon.classList.remove('eye-open');
+                toggleIcon.classList.add('eye-closed');
+            } else {
+                toggleIcon.classList.remove('eye-closed');
+                toggleIcon.classList.add('eye-open');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('signupForm');
+            const submitBtn = document.getElementById('submit-btn');
+
+            if (form && submitBtn) {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+
+                    if (!form.checkValidity()) {
+                        form.reportValidity();
+                        return;
+                    }
+
+                    submitBtn.classList.add('loading');
+                    submitBtn.disabled = true;
+
+                    try {
+                        const token = await executeRecaptcha();
+
+                        if (token) {
+                            document.getElementById('recaptchaToken').value = token;
+                            form.submit();
+                        } else {
+                            throw new Error('reCAPTCHA verification failed');
+                        }
+                    } catch (error) {
+                        console.error('reCAPTCHA error:', error);
+                        submitBtn.classList.remove('loading');
+                        submitBtn.disabled = false;
+                        showError('Verification failed. Please try again.');
+                    }
+                });
+            }
+        });
+
+        function executeRecaptcha() {
+            return new Promise((resolve, reject) => {
+                if (typeof grecaptcha !== 'undefined' && RECAPTCHA_SITE_KEY) {
+                    const timeout = setTimeout(() => {
+                        reject(new Error('reCAPTCHA execution timeout'));
+                    }, 10000);
+
+                    grecaptcha.ready(() => {
+                        grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'signup' })
+                            .then(token => {
+                                clearTimeout(timeout);
+                                resolve(token);
+                            })
+                            .catch(error => {
+                                clearTimeout(timeout);
+                                reject(error);
+                            });
+                    });
+                } else {
+                    reject(new Error('reCAPTCHA not loaded or site key missing'));
+                }
+            });
+        }
+
+        function showError(message) {
+            const existingError = document.querySelector('.recaptcha-error');
+            if (existingError) {
+                existingError.remove();
+            }
+
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message recaptcha-error';
+            errorDiv.textContent = message;
+
+            const form = document.getElementById('signupForm');
+            form.parentNode.insertBefore(errorDiv, form.nextSibling);
+
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.parentNode.removeChild(errorDiv);
+                }
+            }, 5000);
+        }
+
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && typeof grecaptcha !== 'undefined') {
+                grecaptcha.ready(() => {
+                    try {
+                        grecaptcha.reset();
+                    } catch (e) {
+                        console.log('reCAPTCHA reset not needed');
+                    }
+                });
+            }
+        });
+
+        window.addEventListener('load', function() {
+            if (typeof grecaptcha !== 'undefined' && RECAPTCHA_SITE_KEY) {
+                grecaptcha.ready(() => {
+                    grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'preload' });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

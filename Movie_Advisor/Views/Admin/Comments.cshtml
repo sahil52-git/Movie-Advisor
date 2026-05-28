@@ -1,0 +1,758 @@
+﻿@model MovieAdvisor.ViewModels.AdminCommentsViewModel
+@using Microsoft.AspNetCore.Antiforgery
+@inject IAntiforgery Antiforgery
+@{
+    ViewData["Title"] = "Manage Comments";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var requestToken = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+}
+
+<style>
+    .comments-management-container {
+        padding: 0;
+        background: transparent;
+    }
+
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 25px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        transition: all 0.3s ease;
+    }
+
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        flex-shrink: 0;
+    }
+
+        .stat-icon.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .stat-icon.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+    .stat-details h3 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        margin: 0 0 5px 0;
+    }
+
+    .stat-details p {
+        font-size: 0.95rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin: 0;
+    }
+
+    .search-bar {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 15px 20px;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+        .search-bar input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+        }
+
+            .search-bar input::placeholder {
+                color: rgba(255, 255, 255, 0.5);
+            }
+
+        .search-bar i {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 1.1rem;
+        }
+
+    .comments-table-container {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .comments-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .comments-table thead {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+            .comments-table thead th {
+                padding: 20px;
+                text-align: left;
+                font-size: 0.85rem;
+                font-weight: 600;
+                color: #00d4ff;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+        .comments-table tbody tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+            .comments-table tbody tr:hover {
+                background: rgba(255, 255, 255, 0.05);
+            }
+
+        .comments-table tbody td {
+            padding: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            vertical-align: middle;
+        }
+
+    .user-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .user-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .user-info h4 {
+        margin: 0 0 3px 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: white;
+    }
+
+    .user-info p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .movie-name {
+        color: #00d4ff;
+        font-weight: 500;
+    }
+
+    .comment-text-cell {
+        max-width: 400px;
+        line-height: 1.5;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .time-cell {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.9rem;
+    }
+
+    .actions-cell {
+        display: flex;
+        gap: 10px;
+    }
+
+    .action-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+
+    .btn-view {
+        background: rgba(0, 212, 255, 0.15);
+        color: #00d4ff;
+    }
+
+        .btn-view:hover {
+            background: rgba(0, 212, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+    .btn-delete {
+        background: rgba(231, 76, 60, 0.15);
+        color: #e74c3c;
+    }
+
+        .btn-delete:hover {
+            background: rgba(231, 76, 60, 0.25);
+            transform: translateY(-2px);
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+    /* Modal Styles */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.2s ease;
+    }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+    .modal-content {
+        background: #1e293b;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 35px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        animation: slideUp 0.3s ease;
+    }
+
+    .modal-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: rgba(231, 76, 60, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+    }
+
+        .modal-icon i {
+            font-size: 2rem;
+            color: #e74c3c;
+        }
+
+    .modal-content h2 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 12px;
+        text-align: center;
+    }
+
+    .modal-content p {
+        color: rgba(255, 255, 255, 0.7);
+        line-height: 1.6;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .modal-btn {
+        padding: 12px 32px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-cancel {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+        .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+    .btn-confirm {
+        background: #e74c3c;
+        color: white;
+    }
+
+        .btn-confirm:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+        }
+
+    /* View Comment Modal */
+    .view-modal .modal-content {
+        max-width: 600px;
+    }
+
+    .comment-details {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+        .comment-details .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+            .comment-details .detail-row:last-child {
+                margin-bottom: 0;
+                padding-bottom: 0;
+                border-bottom: none;
+            }
+
+        .comment-details .label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+
+        .comment-details .value {
+            color: white;
+            font-weight: 500;
+        }
+
+    .comment-full-text {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 12px;
+        padding: 20px;
+        color: rgba(255, 255, 255, 0.9);
+        line-height: 1.6;
+        margin-bottom: 20px;
+        border-left: 3px solid #00d4ff;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @@keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes fadeOut {
+        from {
+            opacity: 1;
+        }
+
+        to {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+    }
+
+    /* Notification */
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 16px 24px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 600;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        z-index: 10000;
+        animation: slideInRight 0.3s ease;
+    }
+
+        .notification.success {
+            background: #27ae60;
+        }
+
+        .notification.error {
+            background: #e74c3c;
+        }
+
+    @@keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+</style>
+
+<input type="hidden" id="RequestVerificationToken" value="@requestToken" />
+
+<div class="comments-management-container">
+    <div class="stats-cards">
+        <div class="stat-card">
+            <div class="stat-icon primary">
+                <i class="fas fa-comments"></i>
+            </div>
+            <div class="stat-details">
+                <h3 id="totalCommentsCount">@Model.TotalComments</h3>
+                <p>Total Comments</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon success">
+                <i class="fas fa-calendar-day"></i>
+            </div>
+            <div class="stat-details">
+                <h3 id="todayCommentsCount">@Model.TodayCount</h3>
+                <p>Comments Today</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text"
+               id="searchInput"
+               placeholder="Search users by name, email, or username...">
+    </div>
+
+    <div class="comments-table-container">
+        @if (Model.RecentComments.Any())
+        {
+            <table class="comments-table">
+                <thead>
+                    <tr>
+                        <th>USER</th>
+                        <th>MOVIE</th>
+                        <th>COMMENT</th>
+                        <th>TIME</th>
+                        <th>ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody id="commentsTableBody">
+                    @foreach (var comment in Model.RecentComments)
+                    {
+                        <tr data-comment-id="@comment.Id"
+                            data-user="@comment.UserName.ToLower()"
+                            data-movie="@comment.MovieTitle.ToLower()"
+                            data-text="@comment.CommentText.ToLower()">
+                            <td>
+                                <div class="user-cell">
+                                    <div class="user-avatar">@comment.UserInitial</div>
+                                    <div class="user-info">
+                                        <h4>@comment.UserName</h4>
+                                        <p>@("@" + comment.UserName)</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="movie-name">@comment.MovieTitle</span>
+                            </td>
+                            <td>
+                                <div class="comment-text-cell">
+                                    @(comment.CommentText.Length > 80 ? comment.CommentText.Substring(0, 80) + "..." : comment.CommentText)
+                                </div>
+                            </td>
+                            <td>
+                                <span class="time-cell">@comment.TimeAgo</span>
+                            </td>
+                            <td>
+                                <div class="actions-cell">
+                                    <button class="action-btn btn-view"
+                                            onclick="viewComment(@comment.Id, '@Html.Raw(comment.UserName.Replace("'", "\\'"))', '@Html.Raw(comment.MovieTitle.Replace("'", "\\'"))', '@Html.Raw(comment.CommentText.Replace("'", "\\'").Replace("\n", "\\n").Replace("\r", ""))', '@comment.TimeAgo')"
+                                            title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="action-btn btn-delete"
+                                            onclick="showDeleteModal(@comment.Id)"
+                                            title="Delete">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="far fa-comments"></i>
+                <h3>No Comments Yet</h3>
+                <p>Comments from users will appear here.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal-content">
+        <div class="modal-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h2>Delete Comment?</h2>
+        <p>Are you sure you want to delete this comment? This action cannot be undone.</p>
+        <div class="modal-actions">
+            <button class="modal-btn btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+            <button class="modal-btn btn-confirm" onclick="confirmDelete()">Delete</button>
+        </div>
+    </div>
+</div>
+
+<!-- View Comment Modal -->
+<div class="modal-overlay view-modal" id="viewModal">
+    <div class="modal-content">
+        <h2>Comment Details</h2>
+        <div class="comment-details">
+            <div class="detail-row">
+                <span class="label">User:</span>
+                <span class="value" id="viewUserName"></span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Movie:</span>
+                <span class="value" id="viewMovieName"></span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Posted:</span>
+                <span class="value" id="viewTime"></span>
+            </div>
+        </div>
+        <div class="comment-full-text" id="viewCommentText"></div>
+        <div class="modal-actions">
+            <button class="modal-btn btn-cancel" onclick="closeViewModal()">Close</button>
+            <button class="modal-btn btn-confirm" onclick="deleteFromView()">Delete Comment</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let commentToDelete = null;
+        let currentViewCommentId = null;
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const tableBody = document.getElementById('commentsTableBody');
+
+        if (searchInput) {
+            searchInput.addEventListener('input', filterComments);
+        }
+
+        function filterComments() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const rows = document.querySelectorAll('#commentsTableBody tr');
+
+            rows.forEach(row => {
+                const user = row.dataset.user;
+                const movie = row.dataset.movie;
+                const text = row.dataset.text;
+
+                if (user.includes(searchTerm) || movie.includes(searchTerm) || text.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // View comment modal
+        function viewComment(id, userName, movieName, commentText, timeAgo) {
+            currentViewCommentId = id;
+            document.getElementById('viewUserName').textContent = userName;
+            document.getElementById('viewMovieName').textContent = movieName;
+            document.getElementById('viewCommentText').textContent = commentText;
+            document.getElementById('viewTime').textContent = timeAgo;
+            document.getElementById('viewModal').classList.add('active');
+        }
+
+        function closeViewModal() {
+            document.getElementById('viewModal').classList.remove('active');
+            currentViewCommentId = null;
+        }
+
+        function deleteFromView() {
+            if (currentViewCommentId) {
+                closeViewModal();
+                showDeleteModal(currentViewCommentId);
+            }
+        }
+
+        // Delete modal functions
+        function showDeleteModal(commentId) {
+            commentToDelete = commentId;
+            document.getElementById('deleteModal').classList.add('active');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+            commentToDelete = null;
+        }
+
+        async function confirmDelete() {
+            if (!commentToDelete) return;
+
+            try {
+                const token = document.getElementById('RequestVerificationToken').value;
+
+                console.log('Deleting comment ID:', commentToDelete); // Debug log
+
+                const response = await fetch('@Url.Action("DeleteComment", "Admin")?id=' + commentToDelete, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Delete response:', data); // Debug log
+
+                if (data.success) {
+                    showNotification('Comment deleted successfully!', 'success');
+
+                    // Remove the row with animation
+                    const row = document.querySelector(`[data-comment-id="${commentToDelete}"]`);
+                    if (row) {
+                        row.style.animation = 'fadeOut 0.3s ease';
+                        setTimeout(() => {
+                            row.remove();
+
+                            // Update stats
+                            updateStats();
+
+                            // Check if table is empty
+                            if (document.querySelectorAll('#commentsTableBody tr').length === 0) {
+                                location.reload();
+                            }
+                        }, 300);
+                    }
+
+                    closeDeleteModal();
+                } else {
+                    showNotification(data.message || 'Error deleting comment', 'error');
+                    closeDeleteModal();
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                showNotification('Error deleting comment: ' + error.message, 'error');
+                closeDeleteModal();
+            }
+        }
+
+        // Update stats after deletion
+        function updateStats() {
+            const currentTotal = parseInt(document.getElementById('totalCommentsCount').textContent);
+            document.getElementById('totalCommentsCount').textContent = currentTotal - 1;
+        }
+
+        // Close modals when clicking outside
+        document.getElementById('deleteModal').addEventListener('click', function(e) {
+            if (e.target === this) closeDeleteModal();
+        });
+
+        document.getElementById('viewModal').addEventListener('click', function(e) {
+            if (e.target === this) closeViewModal();
+        });
+
+        // Close modals with ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeDeleteModal();
+                closeViewModal();
+            }
+        });
+
+        // Notification
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideInRight 0.3s ease reverse';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+    </script>
+}

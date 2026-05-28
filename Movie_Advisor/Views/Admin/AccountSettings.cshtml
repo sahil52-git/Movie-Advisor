@@ -1,0 +1,607 @@
+﻿@model MovieAdvisor.ViewModels.AccountSettingsViewModel
+@{
+    ViewData["Title"] = "Account Settings";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    :root {
+        --primary-color: #00BCD4;
+        --secondary-color: #26C6DA;
+        --card-bg: rgba(42, 42, 42, 0.95);
+        --card-bg-light: rgba(9, 31, 54, 0.9);
+        --border-color: rgba(0, 188, 212, 0.3);
+        --text-primary: #ffffff;
+        --text-secondary: #b0b0b0;
+        --success: #30D158;
+        --danger: #dc3545;
+    }
+
+    .settings-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .settings-card {
+        background: linear-gradient(135deg, var(--card-bg) 0%, var(--card-bg-light) 100%);
+        border-radius: 12px;
+        padding: 2rem;
+        border: 2px solid var(--border-color);
+        box-shadow: 0 4px 20px rgba(9, 31, 54, 0.6);
+        backdrop-filter: blur(10px);
+        margin-bottom: 2rem;
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .card-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 10px;
+        background: rgba(0, 188, 212, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-color);
+        font-size: 1.5rem;
+    }
+
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .card-description {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-top: 0.25rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        background: rgba(15, 40, 98, 0.5);
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.2);
+        }
+
+    .toggle-switch {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.25rem;
+        background: rgba(15, 40, 98, 0.3);
+        border-radius: 8px;
+        border: 2px solid var(--border-color);
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+        .toggle-switch:hover {
+            background: rgba(15, 40, 98, 0.5);
+            border-color: var(--primary-color);
+        }
+
+    .toggle-info {
+        flex: 1;
+    }
+
+    .toggle-title {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+    }
+
+    .toggle-description {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 32px;
+    }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(176, 176, 176, 0.3);
+        transition: .4s;
+        border-radius: 32px;
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 24px;
+            width: 24px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+    input:checked + .slider {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    }
+
+        input:checked + .slider:before {
+            transform: translateX(28px);
+        }
+
+    .btn {
+        padding: 0.875rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        box-shadow: 0 4px 15px rgba(0, 188, 212, 0.4);
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 188, 212, 0.6);
+        }
+
+    .btn-danger {
+        background: linear-gradient(135deg, var(--danger), #c82333);
+        color: white;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+    }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.6);
+        }
+
+    .alert {
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        animation: slideIn 0.3s ease;
+    }
+
+    .alert-success {
+        background: rgba(48, 209, 88, 0.2);
+        border: 2px solid rgba(48, 209, 88, 0.4);
+        color: var(--success);
+    }
+
+    .alert-danger {
+        background: rgba(220, 53, 69, 0.2);
+        border: 2px solid rgba(220, 53, 69, 0.4);
+        color: var(--danger);
+    }
+
+    @@keyframes slideIn {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    .danger-zone {
+        background: rgba(220, 53, 69, 0.1);
+        border: 2px solid rgba(220, 53, 69, 0.3);
+    }
+
+    .info-box {
+        background: rgba(0, 188, 212, 0.1);
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        gap: 1rem;
+    }
+
+        .info-box i {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+        }
+</style>
+
+<div class="settings-container">
+    <!-- Security Settings -->
+    <div class="settings-card">
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="fas fa-lock"></i>
+            </div>
+            <div>
+                <h2 class="card-title">Security Settings</h2>
+                <p class="card-description">Manage your password and security preferences</p>
+            </div>
+        </div>
+
+        <div id="passwordMessage"></div>
+
+        <form id="passwordForm">
+            <div class="form-group">
+                <label class="form-label">Current Password</label>
+                <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input type="password" class="form-control" id="newPassword" name="newPassword" required minlength="6">
+                <small style="color: var(--text-secondary); font-size: 0.85rem;">Minimum 6 characters</small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Confirm New Password</label>
+                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-key"></i>
+                Change Password
+            </button>
+        </form>
+    </div>
+
+    <!-- Notification Preferences -->
+    <div class="settings-card">
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="fas fa-bell"></i>
+            </div>
+            <div>
+                <h2 class="card-title">Notification Preferences</h2>
+                <p class="card-description">Choose what notifications you want to receive</p>
+            </div>
+        </div>
+
+        <div id="notificationMessage"></div>
+
+        <form id="notificationForm">
+            <div class="toggle-switch">
+                <div class="toggle-info">
+                    <div class="toggle-title">Email Notifications</div>
+                    <div class="toggle-description">Receive email notifications for important updates</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="emailNotifications" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="toggle-switch">
+                <div class="toggle-info">
+                    <div class="toggle-title">Security Alerts</div>
+                    <div class="toggle-description">Get notified about security-related activities</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="securityAlerts" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="toggle-switch">
+                <div class="toggle-info">
+                    <div class="toggle-title">Activity Digest</div>
+                    <div class="toggle-description">Weekly summary of platform activity</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="activityDigest">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="toggle-switch">
+                <div class="toggle-info">
+                    <div class="toggle-title">Comment Notifications</div>
+                    <div class="toggle-description">Notify when new comments are posted</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="commentNotifications" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="toggle-switch">
+                <div class="toggle-info">
+                    <div class="toggle-title">Report Notifications</div>
+                    <div class="toggle-description">Notify when content is reported</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="reportNotifications" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i>
+                Save Preferences
+            </button>
+        </form>
+    </div>
+
+    <!-- Two-Factor Authentication -->
+    <div class="settings-card">
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div>
+                <h2 class="card-title">Two-Factor Authentication</h2>
+                <p class="card-description">Add an extra layer of security to your account</p>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <i class="fas fa-info-circle"></i>
+            <div>
+                <div style="font-weight: 600; margin-bottom: 0.25rem;">Enhanced Security</div>
+                <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                    Two-factor authentication provides an additional layer of security for your account
+                </div>
+            </div>
+        </div>
+
+        <div class="toggle-switch">
+            <div class="toggle-info">
+                <div class="toggle-title">Enable Two-Factor Authentication</div>
+                <div class="toggle-description">Require a verification code in addition to your password</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="twoFactorAuth">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <button class="btn btn-primary" onclick="alert('Two-factor authentication setup coming soon!')">
+            <i class="fas fa-mobile-alt"></i>
+            Setup 2FA
+        </button>
+    </div>
+
+    <!-- Account Information -->
+    <div class="settings-card">
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="fas fa-user-circle"></i>
+            </div>
+            <div>
+                <h2 class="card-title">Account Information</h2>
+                <p class="card-description">Your account details</p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Username</label>
+            <input type="text" class="form-control" value="@Model.Username" disabled>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" value="@Model.Email" disabled>
+        </div>
+
+        <a href="@Url.Action("Profile", "Admin")" class="btn btn-primary">
+            <i class="fas fa-user-edit"></i>
+            Edit Profile
+        </a>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="settings-card danger-zone">
+        <div class="card-header" style="border-bottom-color: rgba(220, 53, 69, 0.3);">
+            <div class="card-icon" style="background: rgba(220, 53, 69, 0.2); color: var(--danger);">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div>
+                <h2 class="card-title">Danger Zone</h2>
+                <p class="card-description">Irreversible and destructive actions</p>
+            </div>
+        </div>
+
+        <div class="info-box" style="background: rgba(220, 53, 69, 0.1); border-color: rgba(220, 53, 69, 0.3);">
+            <i class="fas fa-exclamation-circle" style="color: var(--danger);"></i>
+            <div>
+                <div style="font-weight: 600; margin-bottom: 0.25rem; color: var(--danger);">Warning</div>
+                <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                    These actions cannot be undone. Please proceed with caution.
+                </div>
+            </div>
+        </div>
+
+        <button class="btn btn-danger" onclick="confirmAccountDeletion()">
+            <i class="fas fa-user-times"></i>
+            Delete Account
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Password Change Form
+        document.getElementById('passwordForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (newPassword !== confirmPassword) {
+                document.getElementById('passwordMessage').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>Passwords do not match!</span>
+                    </div>
+                `;
+                return;
+            }
+
+            const formData = {
+                currentPassword: document.getElementById('currentPassword').value,
+                newPassword: newPassword,
+                confirmPassword: confirmPassword
+            };
+
+            try {
+                const response = await fetch('@Url.Action("ChangePassword", "Admin")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                const messageDiv = document.getElementById('passwordMessage');
+
+                if (result.success) {
+                    messageDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i>
+                            <span>${result.message}</span>
+                        </div>
+                    `;
+                    document.getElementById('passwordForm').reset();
+                } else {
+                    messageDiv.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>${result.message}</span>
+                        </div>
+                    `;
+                }
+
+                setTimeout(() => {
+                    messageDiv.innerHTML = '';
+                }, 5000);
+            } catch (error) {
+                document.getElementById('passwordMessage').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>Failed to change password. Please try again.</span>
+                    </div>
+                `;
+            }
+        });
+
+        // Notification Preferences Form
+        document.getElementById('notificationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = {
+                emailNotifications: document.getElementById('emailNotifications').checked,
+                securityAlerts: document.getElementById('securityAlerts').checked,
+                activityDigest: document.getElementById('activityDigest').checked,
+                commentNotifications: document.getElementById('commentNotifications').checked,
+                reportNotifications: document.getElementById('reportNotifications').checked
+            };
+
+            try {
+                const response = await fetch('@Url.Action("UpdateNotificationSettings", "Admin")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                const messageDiv = document.getElementById('notificationMessage');
+
+                if (result.success) {
+                    messageDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i>
+                            <span>${result.message}</span>
+                        </div>
+                    `;
+                } else {
+                    messageDiv.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>${result.message}</span>
+                        </div>
+                    `;
+                }
+
+                setTimeout(() => {
+                    messageDiv.innerHTML = '';
+                }, 3000);
+            } catch (error) {
+                document.getElementById('notificationMessage').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>Failed to update settings. Please try again.</span>
+                    </div>
+                `;
+            }
+        });
+
+        function confirmAccountDeletion() {
+            if (confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) {
+                if (confirm('This will permanently delete all your data. Type DELETE to confirm.')) {
+                    alert('Account deletion feature will be implemented soon.');
+                }
+            }
+        }
+    </script>
+}

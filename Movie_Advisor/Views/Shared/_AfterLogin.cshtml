@@ -1,0 +1,689 @@
+﻿@using Microsoft.AspNetCore.Http
+@using System.Security.Claims
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MovieAdvisor</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Jost', sans-serif;
+            background: linear-gradient(135deg, #0f2862 0%, #091f36 100%);
+            color: white;
+            min-height: 100vh;
+            position: relative;
+        }
+
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(circle at 20% 50%, rgba(15, 40, 98, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(9, 31, 54, 0.1) 0%, transparent 50%), radial-gradient(circle at 40% 80%, rgba(15, 40, 98, 0.05) 0%, transparent 50%);
+                z-index: -1;
+                pointer-events: none;
+            }
+
+        .navbar-custom {
+            background: linear-gradient(135deg, #091f36 0%, #0f2862 100%) !important;
+            padding: 1rem 0 !important;
+            box-shadow: 0 4px 20px rgba(9, 31, 54, 0.6);
+            border-bottom: 1px solid rgba(9, 31, 54, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .navbar-brand {
+            color: #00BCD4 !important;
+            font-weight: 700 !important;
+            font-size: 1.8rem !important;
+            font-family: 'Inter', sans-serif !important;
+        }
+
+            .navbar-brand:hover {
+                color: #26C6DA !important;
+            }
+
+        .navbar-nav .nav-link {
+            color: #ffffff !important;
+            font-weight: 500 !important;
+            font-family: 'Inter', sans-serif !important;
+            margin: 0 10px !important;
+            transition: all 0.3s ease !important;
+            padding: 8px 16px !important;
+            border-radius: 6px !important;
+        }
+
+            .navbar-nav .nav-link:hover {
+                color: #00BCD4 !important;
+                background: rgba(0, 188, 212, 0.1) !important;
+            }
+
+        .logout-btn .nav-link {
+            background: linear-gradient(135deg, #dc3545, #b02a37) !important;
+            color: #ffffff !important;
+            padding: 10px 20px !important;
+            border-radius: 8px !important;
+            font-weight: 500 !important;
+            font-family: 'Inter', sans-serif !important;
+            margin: 0 5px !important;
+            transition: all 0.3s ease !important;
+            border: 2px solid #dc3545 !important;
+            text-decoration: none !important;
+            cursor: pointer !important;
+        }
+
+            .logout-btn .nav-link:hover {
+                background: linear-gradient(135deg, #c82333, #a02622) !important;
+                border-color: #c82333 !important;
+                transform: translateY(-2px) !important;
+                box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4) !important;
+                color: #ffffff !important;
+            }
+
+            .logout-btn .nav-link:active {
+                transform: translateY(0) !important;
+            }
+
+        .navbar-toggler {
+            border-color: #00BCD4 !important;
+        }
+
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2800, 188, 212, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+        }
+
+        .main-content {
+            margin-top: 0 !important;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .user-info {
+            background: linear-gradient(135deg, rgba(42, 42, 42, 0.95) 0%, rgba(9, 31, 54, 0.9) 100%);
+            color: #00BCD4;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-right: 10px;
+            border: 1px solid rgba(0, 188, 212, 0.3);
+        }
+
+        .dashboard-container {
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .dashboard-logo {
+            background: linear-gradient(135deg, #00BCD4, #26C6DA);
+            color: white;
+            font-size: 3rem;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            padding: 20px 40px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 32px rgba(0, 188, 212, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 30px;
+        }
+
+        .search-form {
+            display: flex;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+        }
+
+            .search-input::placeholder {
+                color: #888;
+            }
+
+        .search-btn {
+            background: linear-gradient(135deg, #00BCD4, #26C6DA);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+            .search-btn:hover {
+                background: linear-gradient(135deg, #26C6DA, #4DD0E1);
+                transform: translateY(-1px);
+            }
+
+        .dashboard-subtitle {
+            color: #ffffff;
+            font-size: 1.2rem;
+            font-weight: 400;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .home-btn {
+            background: linear-gradient(135deg, #00BCD4, #26C6DA);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);
+        }
+
+            .home-btn:hover {
+                background: linear-gradient(135deg, #26C6DA, #4DD0E1);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(0, 188, 212, 0.4);
+                color: white;
+                text-decoration: none;
+            }
+
+        /* Genre Dropdown Styles */
+        .genre-dropdown {
+            position: relative;
+        }
+
+        .genre-dropdown-toggle {
+            background: transparent !important;
+            color: #ffffff !important;
+            font-weight: 500 !important;
+            font-family: 'Inter', sans-serif !important;
+            margin: 0 10px !important;
+            transition: all 0.3s ease !important;
+            padding: 8px 16px !important;
+            border-radius: 6px !important;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+            .genre-dropdown-toggle:hover {
+                color: #00BCD4 !important;
+                background: rgba(0, 188, 212, 0.1) !important;
+            }
+
+            .genre-dropdown-toggle i.chevron {
+                transition: transform 0.3s ease;
+                font-size: 0.8rem;
+            }
+
+            .genre-dropdown-toggle.active i.chevron {
+                transform: rotate(180deg);
+            }
+
+        .genre-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: linear-gradient(135deg, #091f36 0%, #0f2862 100%);
+            border: 2px solid rgba(0, 188, 212, 0.3);
+            border-radius: 10px;
+            min-width: 280px;
+            max-height: 400px;
+            overflow-y: auto;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            display: none;
+            margin-top: 0.5rem;
+        }
+
+            .genre-dropdown-menu.show {
+                display: block;
+                animation: slideDown 0.3s ease;
+            }
+
+        .genre-dropdown-search {
+            position: sticky;
+            top: 0;
+            background: linear-gradient(135deg, #091f36 0%, #0f2862 100%);
+            padding: 1rem;
+            border-bottom: 2px solid rgba(0, 188, 212, 0.3);
+            z-index: 10;
+        }
+
+            .genre-dropdown-search .search-wrapper {
+                position: relative;
+            }
+
+            .genre-dropdown-search input {
+                width: 100%;
+                padding: 0.6rem 0.8rem 0.6rem 2.5rem;
+                background: rgba(255, 255, 255, 0.1);
+                border: 2px solid rgba(0, 188, 212, 0.3);
+                border-radius: 8px;
+                color: #ffffff;
+                font-size: 0.85rem;
+                font-weight: 500;
+            }
+
+                .genre-dropdown-search input:focus {
+                    outline: none;
+                    border-color: #00BCD4;
+                    background: rgba(255, 255, 255, 0.15);
+                }
+
+                .genre-dropdown-search input::placeholder {
+                    color: rgba(255, 255, 255, 0.5);
+                }
+
+            .genre-dropdown-search i {
+                position: absolute;
+                left: 0.8rem;
+                top: 50%;
+                transform: translateY(-50%);
+                color: rgba(255, 255, 255, 0.5);
+            }
+
+        .genre-dropdown-item {
+            padding: 0.8rem 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom: 1px solid rgba(0, 188, 212, 0.1);
+            text-decoration: none;
+            color: #ffffff;
+        }
+
+            .genre-dropdown-item:last-child {
+                border-bottom: none;
+            }
+
+            .genre-dropdown-item:hover {
+                background: rgba(0, 188, 212, 0.15);
+                color: #00BCD4;
+                text-decoration: none;
+            }
+
+            .genre-dropdown-item i {
+                color: #00BCD4;
+                font-size: 1rem;
+                width: 20px;
+                flex-shrink: 0;
+            }
+
+            .genre-dropdown-item .genre-name {
+                flex: 1;
+                font-weight: 500;
+                font-size: 0.9rem;
+            }
+
+            .genre-dropdown-item .genre-count {
+                background: rgba(0, 188, 212, 0.2);
+                color: #00BCD4;
+                padding: 0.25rem 0.6rem;
+                border-radius: 8px;
+                font-size: 0.75rem;
+                font-weight: 700;
+            }
+
+        .genre-dropdown-menu::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .genre-dropdown-menu::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .genre-dropdown-menu::-webkit-scrollbar-thumb {
+            background: #00BCD4;
+            border-radius: 3px;
+        }
+
+            .genre-dropdown-menu::-webkit-scrollbar-thumb:hover {
+                background: #26C6DA;
+            }
+
+        @@keyframes slideDown {
+            from
+
+        {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        }
+
+        @@media (max-width: 991px) {
+            .logout-btn
+
+        {
+            margin-top: 10px;
+        }
+
+        .logout-btn .nav-link {
+            margin: 5px 0;
+            text-align: center;
+            display: block;
+        }
+
+        .user-info {
+            margin-right: 0;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .dashboard-logo {
+            font-size: 2rem;
+            padding: 15px 30px;
+        }
+
+        .search-container {
+            max-width: 100%;
+            padding: 0 10px;
+        }
+
+        .genre-dropdown-menu {
+            position: static;
+            margin-top: 0.5rem;
+            max-height: 300px;
+        }
+
+        .genre-dropdown-toggle {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        }
+
+        @@media (max-width: 576px) {
+            .dashboard-logo
+
+        {
+            font-size: 1.5rem;
+            padding: 12px 25px;
+        }
+
+        .search-form {
+            flex-direction: column;
+        }
+
+        .search-btn {
+            border-radius: 0 0 10px 10px;
+        }
+
+        .search-input {
+            border-radius: 10px 10px 0 0;
+        }
+
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #091f36;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #0f2862, #00bcd4);
+            border-radius: 4px;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: linear-gradient(135deg, #00bcd4, #0f2862);
+            }
+
+        ::selection {
+            background: rgba(0, 188, 212, 0.3);
+            color: white;
+        }
+
+        ::-moz-selection {
+            background: rgba(0, 188, 212, 0.3);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg fixed-top navbar-custom">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <img src="~/image/video-shooting.png" alt="Logo" style="height:40px;" />
+            </a>
+            <a class="navbar-brand" asp-controller="Home" asp-action="Index">MovieAdvisor</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between" id="mainNavbar">
+                <ul class="navbar-nav flex-grow-1">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="Advisor" asp-action="Home">Home</a>
+                    </li>
+                    <li class="nav-item genre-dropdown">
+                        <button class="genre-dropdown-toggle nav-link" id="genreDropdownBtn">
+                            Genres <i class="fas fa-chevron-down chevron"></i>
+                        </button>
+                        <div class="genre-dropdown-menu" id="genreDropdownMenu">
+                            <div class="genre-dropdown-search">
+                                <div class="search-wrapper">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="genreDropdownSearch" placeholder="Search genres...">
+                                </div>
+                            </div>
+                            <a href="@Url.Action("FilterByGenre", "Advisor", new { genre = "Action" })" class="genre-dropdown-item">
+                                <i class="fas fa-fist-raised"></i>
+                                <span class="genre-name">Action</span>
+                                <span class="genre-count">47</span>
+                            </a>
+                            <a href="@Url.Action("FilterByGenre", "Advisor", new { genre = "Adventure" })" class="genre-dropdown-item">
+                                <i class="fas fa-hiking"></i>
+                                <span class="genre-name">Adventure</span>
+                                <span class="genre-count">24</span>
+                            </a>
+                            <a href="@Url.Action("FilterByGenre", "Advisor", new { genre = "Animation" })" class="genre-dropdown-item">
+                                <i class="fas fa-palette"></i>
+                                <span class="genre-name">Animation</span>
+                                <span class="genre-count">13</span>
+                            </a>
+                            <a href="@Url.Action("FilterByGenre", "Advisor", new { genre = "Comedy" })" class="genre-dropdown-item">
+                                <i class="fas fa-laugh"></i>
+                                <span class="genre-name">Comedy</span>
+                                <span class="genre-count">23</span>
+                            </a>
+                            <a href="@Url.Action("FilterByGenre", "Advisor", new { genre = "Crime" })" class="genre-dropdown-item">
+                                <i class="fas fa-user-secret"></i>
+                                <span class="genre-name">Crime</span>
+                                <span class="genre-count">16</span>
+                            </a>
+                            <a href="@Url.Action("FilterByGenre", "Advisor", new { genre = "Drama" })" class="genre-dropdown-item">
+                                <i class="fas fa-theater-masks"></i>
+                                <span class="genre-name">Drama</span>
+                                <span class="genre-count">22</span>
+                            </a>
+                            <a href="@Url.Action("FilterByGenre", "Advisor", new { genre = "Family" })" class="genre-dropdown-item">
+                                <i class="fas fa-users"></i>
+                                <span class="genre-name">Family</span>
+                                <span class="genre-count">9</span>
+                            </a>
+                            <a href="@Url.Action("FilterByGenre", "Advisor", new { genre = "Fantasy" })" class="genre-dropdown-item">
+                                <i class="fas fa-dragon"></i>
+                                <span class="genre-name">Fantasy</span>
+                                <span class="genre-count">15</span>
+                            </a>
+                            <a href="@Url.Action("FilterByGenre", "Advisor", new { genre = "Horror" })" class="genre-dropdown-item">
+                                <i class="fas fa-ghost"></i>
+                                <span class="genre-name">Horror</span>
+                                <span class="genre-count">20</span>
+                            </a>
+                            <a href="@Url.Action("FilterByGenre", "Advisor", new { genre = "Mystery" })" class="genre-dropdown-item">
+                                <i class="fas fa-question-circle"></i>
+                                <span class="genre-name">Mystery</span>
+                                <span class="genre-count">3</span>
+                            </a>
+                            <a href="@Url.Action("FilterByGenre", "Advisor", new { genre = "Romance" })" class="genre-dropdown-item">
+                                <i class="fas fa-heart"></i>
+                                <span class="genre-name">Romance</span>
+                                <span class="genre-count">14</span>
+                            </a>
+                            <a href="@Url.Action("FilterByGenre", "Advisor", new { genre = "Thriller" })" class="genre-dropdown-item">
+                                <i class="fas fa-bolt"></i>
+                                <span class="genre-name">Thriller</span>
+                                <span class="genre-count">30</span>
+                            </a>
+                            <a href="@Url.Action("FilterByGenre", "Advisor", new { genre = "War" })" class="genre-dropdown-item">
+                                <i class="fas fa-flag"></i>
+                                <span class="genre-name">War</span>
+                                <span class="genre-count">3</span>
+                            </a>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="Advisor" asp-action="Movie">Movies</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="Advisor" asp-action="TopImdb">Top IMDB</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="Advisor" asp-action="Watchlist">Watchlist</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="Advisor" asp-action="WatchHistory">Watch history</a>
+                    </li>
+                </ul>
+                <div class="navbar-nav ms-auto d-flex align-items-center">
+                    @if (Context.Session.GetString("UserName") != null)
+                    {
+                        <span class="user-info d-none d-md-inline">
+                            Welcome, @Context.Session.GetString("UserName")
+                        </span>
+                    }
+                    <div class="logout-btn">
+                        <form asp-controller="User" asp-action="Logout" method="post" id="navLogoutForm" style="display: inline;">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="nav-link btn">
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <main class="main-content" style="margin-top: 80px;">
+        <div class="container-fluid">
+            @RenderBody()
+        </div>
+    </main>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // Handle logout from navigation
+            const navLogoutForm = document.getElementById('navLogoutForm');
+
+            if (navLogoutForm) {
+                navLogoutForm.addEventListener('submit', function(e) {
+                    // Clear temporary password data from session storage
+                    sessionStorage.removeItem('firstTimeLogin');
+                    sessionStorage.removeItem('tempPassword');
+
+                    // Set flag that user logged out
+                    // This will be picked up by Login.cshtml to prevent password autofill
+                    sessionStorage.setItem('justLoggedOut', 'true');
+
+                    console.log('Navigation Logout: Temporary credentials cleared');
+
+                    // Form will submit normally
+                });
+            }
+
+            // Genre Dropdown Toggle
+            $(document).ready(function() {
+                $('#genreDropdownBtn').on('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    $(this).toggleClass('active');
+                    $('#genreDropdownMenu').toggleClass('show');
+                });
+
+                // Close dropdown when clicking outside
+                $(document).on('click', function(e) {
+                    if (!$(e.target).closest('.genre-dropdown').length) {
+                        $('#genreDropdownBtn').removeClass('active');
+                        $('#genreDropdownMenu').removeClass('show');
+                    }
+                });
+
+                // Prevent dropdown from closing when clicking inside
+                $('#genreDropdownMenu').on('click', function(e) {
+                    e.stopPropagation();
+                });
+
+                // Genre dropdown search
+                $('#genreDropdownSearch').on('input', function(e) {
+                    e.stopPropagation();
+                    const searchTerm = $(this).val().toLowerCase();
+
+                    $('.genre-dropdown-item').each(function() {
+                        const genreText = $(this).find('.genre-name').text().toLowerCase();
+                        $(this).toggle(genreText.includes(searchTerm));
+                    });
+                });
+
+                // Prevent search input from closing dropdown
+                $('#genreDropdownSearch').on('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+        })();
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

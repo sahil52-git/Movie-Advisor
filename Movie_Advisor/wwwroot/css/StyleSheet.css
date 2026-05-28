@@ -1,0 +1,51 @@
+﻿.hero-section {
+    text-align: center;
+    padding: 80px 20px;
+    background: linear-gradient(135deg, #002244, #0b1a39);
+}
+
+.advisor-banner {
+    font-size: 48px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.subtitle-text {
+    font-size: 18px;
+    color: #ccc;
+    margin-top: 10px;
+}
+
+.main-content {
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: auto;
+}
+
+.faq-section h4 {
+    margin-top: 20px;
+    color: #ffdd57;
+}
+
+.faq-section p {
+    color: #ddd;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.get-started-btn {
+    display: block;
+    margin: 30px auto 0;
+    padding: 12px 25px;
+    background-color: #ffdd57;
+    color: #000;
+    font-weight: bold;
+    border-radius: 8px;
+    border: none;
+    transition: 0.3s;
+}
+
+    .get-started-btn:hover {
+        background-color: #e6c84d;
+        transform: translateY(-2px);
+    }
